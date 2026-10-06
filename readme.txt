@@ -4,7 +4,7 @@ Tags: nomination, hr, form, awards, submissions
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,10 @@ HR Nomination Form seamlessly activates broken or unhandled HTML nomination form
 4. Ensure your form container or form element has the class `.hr-form`. The plugin handles the rest automatically!
 
 == Changelog ==
+
+= 1.0.4 =
+* Made system architecture and proprietary IP specifications hidden by default, accessible only via a subtle, single-line footer toggle.
+* Refined admin dashboard aesthetics to preserve a completely clean interface.
 
 = 1.0.3 =
 * Hid repository hosting details and external links from all admin screens, plugin headers, and update information modals.

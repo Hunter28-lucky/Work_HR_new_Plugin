@@ -3,7 +3,7 @@
  * Plugin Name:       HR Nomination Form
  * Plugin URI:        https://thehrreview.com/nominate/
  * Description:       Fixes and handles HR nomination HTML forms, captures submissions via admin-post, sends HTML emails with attached CSV, provides database logging with CSV/Excel exports, and supports automated updates.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Harshvardhan Kumar (Krish Goswami)
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'HR_NOMINATION_VERSION', '1.0.3' );
+define( 'HR_NOMINATION_VERSION', '1.0.4' );
 define( 'HR_NOMINATION_PLUGIN_FILE', __FILE__ );
 define( 'HR_NOMINATION_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'HR_NOMINATION_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

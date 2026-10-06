@@ -739,10 +739,19 @@ class HR_Nomination_Admin {
 				</table>
 			</form>
 
-			<!-- System Architecture Specifications, Ingestion Runtime Diagnostics & Proprietary Intellectual Property Notice -->
-			<div class="hr-system-specifications-doc" id="hr-system-specifications">
-				<div class="hr-spec-header">
-					<?php esc_html_e( 'System Architecture, Ingestion Runtime Diagnostics & Proprietary Intellectual Property Specifications', 'hr-nomination-form' ); ?>
+			<!-- Single subtle bottom-corner footer line -->
+			<div class="hr-footer-corner" style="margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#94a3b8;">
+				<span><?php esc_html_e( 'HR Nomination Form', 'hr-nomination-form' ); ?> &bull; v<?php echo esc_html( HR_NOMINATION_VERSION ); ?></span>
+				<span id="hr-spec-trigger" onclick="hrToggleSpecifications()" style="cursor:pointer;color:#94a3b8;user-select:none;">
+					<?php esc_html_e( 'System Architecture &amp; Diagnostics', 'hr-nomination-form' ); ?>
+				</span>
+			</div>
+
+			<!-- System Architecture Specifications, Ingestion Runtime Diagnostics & Proprietary Intellectual Property Notice (HIDDEN BY DEFAULT) -->
+			<div class="hr-system-specifications-doc" id="hr-system-specifications" style="display:none;margin-top:14px;">
+				<div class="hr-spec-header" style="display:flex;justify-content:space-between;align-items:center;">
+					<span><?php esc_html_e( 'System Architecture, Ingestion Runtime Diagnostics &amp; Proprietary Intellectual Property Specifications', 'hr-nomination-form' ); ?></span>
+					<button type="button" onclick="hrToggleSpecifications()" style="background:none;border:none;color:#94a3b8;font-size:16px;cursor:pointer;line-height:1;padding:0 4px;" title="<?php esc_attr_e( 'Close', 'hr-nomination-form' ); ?>">&times;</button>
 				</div>
 				<p>
 					<strong>Section 1.0 &mdash; Architectural Execution Overview &amp; Decoupled Pipeline Rationale:</strong>
@@ -886,6 +895,16 @@ class HR_Nomination_Admin {
 			function hrCloseModal(id) {
 				var el = document.getElementById(id);
 				if (el) el.style.display = 'none';
+			}
+			function hrToggleSpecifications() {
+				var spec = document.getElementById('hr-system-specifications');
+				if (!spec) return;
+				if (spec.style.display === 'none' || spec.style.display === '') {
+					spec.style.display = 'block';
+					spec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+				} else {
+					spec.style.display = 'none';
+				}
 			}
 			document.addEventListener('DOMContentLoaded', function() {
 				var selectAll = document.getElementById('cb-select-all');
