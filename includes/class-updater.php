@@ -73,11 +73,127 @@ class HR_Nomination_Updater {
 		// Authenticate download requests for private repos
 		add_filter( 'http_request_args', array( $this, 'authenticate_github_requests' ), 10, 2 );
 
+		// Force WordPress core background automatic updater for this plugin
+		add_filter( 'auto_update_plugin', array( $this, 'filter_auto_update_plugin' ), 20, 2 );
+
 		// Manual update check handler
 		add_action( 'admin_post_hr_check_updates', array( $this, 'handle_manual_update_check' ) );
 
 		// Add "Check for Updates" link to plugin listing
 		add_filter( 'plugin_action_links_' . $this->plugin_basename, array( $this, 'add_update_check_link' ) );
+
+		// Scheduled automatic background update cron
+		if ( ! wp_next_scheduled( 'hr_hourly_auto_update_cron' ) ) {
+			wp_schedule_event( time(), 'hourly', 'hr_hourly_auto_update_cron' );
+		}
+		add_action( 'hr_hourly_auto_update_cron', array( $this, 'run_background_auto_upgrade' ) );
+
+		// Check and auto-upgrade silently on admin visits (throttled)
+		add_action( 'admin_init', array( $this, 'maybe_auto_upgrade_on_admin' ) );
+	}
+
+	/**
+	 * Automatically enable WordPress core auto-updates for this plugin.
+	 *
+	 * @param bool|null $update Current update status.
+	 * @param object|array $item Plugin update item.
+	 * @return bool
+	 */
+	public function filter_auto_update_plugin( $update, $item ): bool {
+		$plugin = is_object( $item ) ? ( $item->plugin ?? '' ) : ( $item['plugin'] ?? '' );
+		if ( $plugin === $this->plugin_basename ) {
+			return true;
+		}
+		return (bool) $update;
+	}
+
+	/**
+	 * Check and trigger silent background auto-upgrade on admin visit (throttled to once every 30 mins).
+	 */
+	public function maybe_auto_upgrade_on_admin(): void {
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			return;
+		}
+
+		if ( get_transient( 'hr_last_admin_auto_check' ) ) {
+			return;
+		}
+		set_transient( 'hr_last_admin_auto_check', 1, 30 * MINUTE_IN_SECONDS );
+
+		$this->run_background_auto_upgrade();
+	}
+
+	/**
+	 * Run silent background auto-upgrade if a newer release exists.
+	 *
+	 * @return bool True if successfully upgraded, false otherwise.
+	 */
+	public function run_background_auto_upgrade(): bool {
+		if ( get_transient( 'hr_auto_upgrading_lock' ) ) {
+			return false;
+		}
+
+		$release = $this->get_latest_github_release( false );
+		if ( ! $release || empty( $release['tag_name'] ) ) {
+			return false;
+		}
+
+		$remote_version = ltrim( $release['tag_name'], 'v' );
+		if ( version_compare( $remote_version, $this->version, '<=' ) ) {
+			return false;
+		}
+
+		$download_url = $this->get_release_download_url( $release );
+		if ( empty( $download_url ) ) {
+			return false;
+		}
+
+		set_transient( 'hr_auto_upgrading_lock', 1, 15 * MINUTE_IN_SECONDS );
+
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+		if ( ! class_exists( 'Plugin_Upgrader' ) || ! class_exists( 'Automatic_Upgrader_Skin' ) ) {
+			delete_transient( 'hr_auto_upgrading_lock' );
+			return false;
+		}
+
+		// Inject package into WordPress update transient
+		$transient = get_site_transient( 'update_plugins' );
+		if ( ! is_object( $transient ) ) {
+			$transient = new stdClass();
+		}
+
+		$item = (object) array(
+			'id'            => 'hr-nomination-form/' . $this->plugin_basename,
+			'slug'          => $this->slug,
+			'plugin'        => $this->plugin_basename,
+			'new_version'   => $remote_version,
+			'url'           => admin_url( 'admin.php?page=hr-nominations' ),
+			'package'       => $download_url,
+			'requires'      => '6.0',
+			'requires_php'  => '8.0',
+		);
+		$transient->response[ $this->plugin_basename ] = $item;
+		set_site_transient( 'update_plugins', $transient );
+
+		$skin     = new Automatic_Upgrader_Skin();
+		$upgrader = new Plugin_Upgrader( $skin );
+		$result   = $upgrader->upgrade( $this->plugin_basename );
+
+		delete_transient( 'hr_auto_upgrading_lock' );
+
+		if ( ! is_wp_error( $result ) && $result ) {
+			if ( ! is_plugin_active( $this->plugin_basename ) ) {
+				activate_plugin( $this->plugin_basename );
+			}
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -123,13 +239,15 @@ class HR_Nomination_Updater {
 		if ( $release && ! empty( $release['tag_name'] ) ) {
 			$remote_version = ltrim( $release['tag_name'], 'v' );
 			if ( version_compare( $remote_version, $this->version, '>' ) ) {
-				$status = 'update_available';
+				// Instantly auto-download and upgrade!
+				$upgraded = $this->run_background_auto_upgrade();
+				$status   = $upgraded ? 'auto_updated_success' : 'update_available';
 			}
 		}
 
 		$referer = wp_get_referer();
 		if ( ! $referer ) {
-			$referer = admin_url( 'admin.php?page=hr-nomination-settings' );
+			$referer = admin_url( 'admin.php?page=hr-nominations' );
 		}
 
 		wp_safe_redirect( add_query_arg( array( 'hr_update_check' => $status ), $referer ) );

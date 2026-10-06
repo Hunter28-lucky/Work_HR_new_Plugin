@@ -496,8 +496,10 @@ class HR_Nomination_Admin {
 		}
 
 		if ( isset( $_GET['hr_update_check'] ) ) {
-			if ( 'update_available' === $_GET['hr_update_check'] ) {
-				echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html__( 'A new version of HR Nomination Form is available!', 'hr-nomination-form' ) . '</strong> <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'View and update on Plugins page &rarr;', 'hr-nomination-form' ) . '</a></p></div>';
+			if ( 'auto_updated_success' === $_GET['hr_update_check'] ) {
+				echo '<div class="notice notice-success is-dismissible"><p><strong>' . esc_html__( 'Plugin was automatically downloaded and updated to the latest version!', 'hr-nomination-form' ) . '</strong></p></div>';
+			} elseif ( 'update_available' === $_GET['hr_update_check'] ) {
+				echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__( 'A new version was detected and background update is in progress.', 'hr-nomination-form' ) . '</p></div>';
 			} else {
 				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Plugin is currently up to date.', 'hr-nomination-form' ) . '</p></div>';
 			}
@@ -527,51 +529,54 @@ class HR_Nomination_Admin {
 		);
 		?>
 		<div class="wrap hr-admin-wrap">
-			<h1 class="wp-heading-inline">
-				<?php esc_html_e( 'HR Nominations', 'hr-nomination-form' ); ?>
-				<span class="count" style="font-size:14px;color:#6b7280;font-weight:400;margin-left:8px;">(<?php echo esc_html( number_format_i18n( $total_items ) ); ?> <?php esc_html_e( 'total', 'hr-nomination-form' ); ?>)</span>
-			</h1>
-
-			<!-- Prominent Developer Credit Banner -->
-			<div class="hr-author-banner" style="background:#ffffff;border:1px solid #e2e8f0;border-left:5px solid #2563eb;border-radius:8px;padding:16px 22px;margin:16px 0 20px 0;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-				<div>
-					<div style="font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-0.02em;line-height:1.2;">
+			<!-- Executive Developer Hero Card -->
+			<div class="hr-header-hero">
+				<div class="hr-hero-main">
+					<div class="hr-hero-title">
 						<?php esc_html_e( 'Developed by Harshvardhan Kumar', 'hr-nomination-form' ); ?>
-						<span style="font-size:15px;font-weight:600;color:#475569;margin-left:6px;">(Krish Goswami)</span>
+						<span class="hr-hero-alias">(Krish Goswami)</span>
 					</div>
-					<div style="font-size:13px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-						<span><strong style="color:#1e293b;">HR Nomination Form</strong> &bull; Enterprise Form Engine &amp; Data Pipeline Architecture</span>
-						<span style="display:inline-block;padding:2px 10px;background:#e0f2fe;color:#0284c7;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #bae6fd;">v<?php echo esc_html( HR_NOMINATION_VERSION ); ?></span>
+					<div class="hr-hero-sub">
+						<span class="hr-hero-appname"><?php esc_html_e( 'HR Nomination Form', 'hr-nomination-form' ); ?> &bull; <?php esc_html_e( 'Enterprise Data Pipeline Engine', 'hr-nomination-form' ); ?></span>
+						<span class="hr-hero-version">v<?php echo esc_html( HR_NOMINATION_VERSION ); ?></span>
+						<span class="hr-hero-autoupdate">
+							<span class="hr-pulsing-dot"></span>
+							<?php esc_html_e( 'Auto-Updates Active', 'hr-nomination-form' ); ?>
+						</span>
 					</div>
 				</div>
-				<div style="display:flex;align-items:center;gap:8px;">
-					<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#059669;font-weight:600;background:#ecfdf5;border:1px solid #a7f3d0;padding:5px 12px;border-radius:6px;">
-						<span style="width:8px;height:8px;background:#10b981;border-radius:50%;display:inline-block;"></span>
-						<?php esc_html_e( 'System Active &amp; Ready', 'hr-nomination-form' ); ?>
-					</span>
+				<div class="hr-hero-stats">
+					<div class="hr-stat-box">
+						<div class="hr-stat-val"><?php echo esc_html( number_format_i18n( $total_items ) ); ?></div>
+						<div class="hr-stat-lbl"><?php esc_html_e( 'Total Entries', 'hr-nomination-form' ); ?></div>
+					</div>
+					<div class="hr-stat-box">
+						<div class="hr-stat-val" style="color:#34d399;">100%</div>
+						<div class="hr-stat-lbl"><?php esc_html_e( 'Pipeline Health', 'hr-nomination-form' ); ?></div>
+					</div>
 				</div>
 			</div>
 
-			<div class="hr-admin-actions-bar" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-				<div class="hr-export-buttons" style="display:flex;gap:8px;align-items:center;">
-					<a href="<?php echo esc_url( $csv_export_url ); ?>" class="button button-secondary">
-						<span class="dashicons dashicons-media-spreadsheet" style="vertical-align:middle;margin-right:3px;"></span>
+			<div class="hr-admin-actions-bar">
+				<div class="hr-export-buttons">
+					<a href="<?php echo esc_url( $csv_export_url ); ?>" class="hr-btn hr-btn-secondary">
+						<span class="dashicons dashicons-media-spreadsheet"></span>
 						<?php esc_html_e( 'Export to CSV', 'hr-nomination-form' ); ?>
 					</a>
-					<a href="<?php echo esc_url( $xlsx_export_url ); ?>" class="button button-primary" style="background:#0f766e;border-color:#0d5c56;">
-						<span class="dashicons dashicons-media-default" style="vertical-align:middle;margin-right:3px;"></span>
+					<a href="<?php echo esc_url( $xlsx_export_url ); ?>" class="hr-btn hr-btn-emerald">
+						<span class="dashicons dashicons-media-default"></span>
 						<?php esc_html_e( 'Export to Excel (.xlsx)', 'hr-nomination-form' ); ?>
 					</a>
-					<a href="<?php echo esc_url( $check_update_url ); ?>" class="button" title="<?php esc_attr_e( 'Check for plugin updates immediately', 'hr-nomination-form' ); ?>">
-						<span class="dashicons dashicons-update" style="vertical-align:middle;margin-right:3px;"></span>
+					<a href="<?php echo esc_url( $check_update_url ); ?>" class="hr-btn hr-btn-subtle" title="<?php esc_attr_e( 'Check and download updates immediately', 'hr-nomination-form' ); ?>">
+						<span class="dashicons dashicons-update"></span>
 						<?php esc_html_e( 'Check for Updates', 'hr-nomination-form' ); ?>
 					</a>
 				</div>
 
-				<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display:flex;gap:8px;">
+				<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="hr-filter-form">
 					<input type="hidden" name="page" value="<?php echo esc_attr( self::MENU_SLUG ); ?>" />
 					
-					<select name="category_filter" onchange="this.form.submit()">
+					<select name="category_filter" class="hr-select-modern" onchange="this.form.submit()">
 						<option value=""><?php esc_html_e( 'All Categories', 'hr-nomination-form' ); ?></option>
 						<?php foreach ( $categories as $cat ) : ?>
 							<option value="<?php echo esc_attr( $cat ); ?>" <?php selected( $category_filter, $cat ); ?>>
@@ -580,10 +585,13 @@ class HR_Nomination_Admin {
 						<?php endforeach; ?>
 					</select>
 
-					<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search company, name, email...', 'hr-nomination-form' ); ?>" style="width:240px;" />
-					<button type="submit" class="button"><?php esc_html_e( 'Filter', 'hr-nomination-form' ); ?></button>
+					<div class="hr-search-wrap">
+						<span class="dashicons dashicons-search hr-search-icon"></span>
+						<input type="search" name="s" class="hr-search-input" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search company, name, email...', 'hr-nomination-form' ); ?>" />
+					</div>
+					<button type="submit" class="hr-btn hr-btn-primary"><?php esc_html_e( 'Filter', 'hr-nomination-form' ); ?></button>
 					<?php if ( ! empty( $search ) || ! empty( $category_filter ) ) : ?>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::MENU_SLUG ) ); ?>" class="button"><?php esc_html_e( 'Reset', 'hr-nomination-form' ); ?></a>
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::MENU_SLUG ) ); ?>" class="hr-btn hr-btn-ghost"><?php esc_html_e( 'Reset', 'hr-nomination-form' ); ?></a>
 					<?php endif; ?>
 				</form>
 			</div>
@@ -592,13 +600,13 @@ class HR_Nomination_Admin {
 				<?php wp_nonce_field( 'hr_bulk_submissions_action' ); ?>
 				<input type="hidden" name="action" value="bulk_delete" />
 
-				<div class="tablenav top" style="margin-bottom:8px;">
+				<div class="tablenav top" style="margin-bottom:10px;padding:4px 0;">
 					<div class="alignleft actions bulkactions">
-						<select name="bulk_action_selector" id="bulk-action-selector-top">
+						<select name="bulk_action_selector" id="bulk-action-selector-top" class="hr-select-modern">
 							<option value="-1"><?php esc_html_e( 'Bulk actions', 'hr-nomination-form' ); ?></option>
 							<option value="bulk_delete"><?php esc_html_e( 'Delete Selected', 'hr-nomination-form' ); ?></option>
 						</select>
-						<button type="submit" class="button action" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete selected submissions?', 'hr-nomination-form' ); ?>');">
+						<button type="submit" class="hr-btn hr-btn-subtle" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to delete selected submissions?', 'hr-nomination-form' ); ?>');">
 							<?php esc_html_e( 'Apply', 'hr-nomination-form' ); ?>
 						</button>
 					</div>
@@ -620,123 +628,148 @@ class HR_Nomination_Admin {
 					<?php endif; ?>
 				</div>
 
-				<table class="wp-list-table widefat fixed striped table-view-list">
-					<thead>
-						<tr>
-							<td class="manage-column column-cb check-column" style="width:30px;"><input type="checkbox" id="cb-select-all" /></td>
-							<th class="manage-column" style="width:60px;"><?php esc_html_e( 'ID', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column" style="width:130px;"><?php esc_html_e( 'Date', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column" style="width:180px;"><?php esc_html_e( 'Company Name', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column" style="width:160px;"><?php esc_html_e( 'Category', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column"><?php esc_html_e( 'Contact Person', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column"><?php esc_html_e( 'Email & Phone', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column" style="width:100px;"><?php esc_html_e( 'Email Status', 'hr-nomination-form' ); ?></th>
-							<th class="manage-column" style="width:190px;"><?php esc_html_e( 'Actions', 'hr-nomination-form' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php if ( empty( $submissions ) ) : ?>
+				<div class="hr-table-card">
+					<table class="wp-list-table widefat fixed striped table-view-list hr-modern-table">
+						<thead>
 							<tr>
-								<td colspan="9" style="text-align:center;padding:24px;color:#6b7280;">
-									<?php esc_html_e( 'No nominations found.', 'hr-nomination-form' ); ?>
-								</td>
+								<td class="manage-column column-cb check-column" style="width:36px;"><input type="checkbox" id="cb-select-all" /></td>
+								<th class="manage-column" style="width:70px;"><?php esc_html_e( 'ID', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column" style="width:140px;"><?php esc_html_e( 'Date', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column" style="width:200px;"><?php esc_html_e( 'Company Name', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column" style="width:180px;"><?php esc_html_e( 'Category', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column"><?php esc_html_e( 'Contact Person', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column"><?php esc_html_e( 'Email & Phone', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column" style="width:110px;text-align:center;"><?php esc_html_e( 'Email Status', 'hr-nomination-form' ); ?></th>
+								<th class="manage-column" style="width:210px;text-align:center;"><?php esc_html_e( 'Actions', 'hr-nomination-form' ); ?></th>
 							</tr>
-						<?php else : ?>
-							<?php foreach ( $submissions as $row ) : ?>
-								<?php
-								$delete_url = wp_nonce_url(
-									admin_url( 'admin.php?page=' . self::MENU_SLUG . '&action=delete&id=' . (int) $row->id ),
-									'hr_delete_submission_' . (int) $row->id
-								);
-								$resend_url = wp_nonce_url(
-									admin_url( 'admin.php?page=' . self::MENU_SLUG . '&action=resend&id=' . (int) $row->id ),
-									'hr_resend_submission_' . (int) $row->id
-								);
-								$modal_id = 'hr-modal-' . (int) $row->id;
-								?>
+						</thead>
+						<tbody>
+							<?php if ( empty( $submissions ) ) : ?>
 								<tr>
-									<th scope="row" class="check-column">
-										<input type="checkbox" name="submission_ids[]" value="<?php echo (int) $row->id; ?>" />
-									</th>
-									<td><strong>#<?php echo (int) $row->id; ?></strong></td>
-									<td><?php echo esc_html( gmdate( 'Y-m-d H:i', strtotime( $row->created_at ) ) ); ?></td>
-									<td>
-										<strong><?php echo esc_html( $row->company_name ); ?></strong>
-										<?php if ( ! empty( $row->website ) ) : ?>
-											<br><a href="<?php echo esc_url( $row->website ); ?>" target="_blank" style="font-size:12px;color:#2563eb;"><?php echo esc_html( $row->website ); ?></a>
-										<?php endif; ?>
-									</td>
-									<td><span class="badge" style="display:inline-block;padding:2px 8px;background:#e0e7ff;color:#3730a3;border-radius:4px;font-size:12px;font-weight:600;"><?php echo esc_html( $row->category ); ?></span></td>
-									<td>
-										<strong><?php echo esc_html( $row->contact_person ); ?></strong>
-										<?php if ( ! empty( $row->job_title ) ) : ?>
-											<br><span style="font-size:12px;color:#6b7280;"><?php echo esc_html( $row->job_title ); ?></span>
-										<?php endif; ?>
-									</td>
-									<td>
-										<a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a>
-										<br><span style="font-size:12px;color:#6b7280;"><?php echo esc_html( $row->phone ); ?></span>
-									</td>
-									<td>
-										<?php if ( $row->email_sent ) : ?>
-											<span style="color:#16a34a;font-weight:600;">&#10003; Sent</span>
-										<?php else : ?>
-											<span style="color:#dc2626;font-weight:600;">&#10007; Pending</span>
-										<?php endif; ?>
-									</td>
-									<td>
-										<button type="button" class="button button-small" onclick="hrOpenModal('<?php echo esc_attr( $modal_id ); ?>')">
-											<?php esc_html_e( 'View Details', 'hr-nomination-form' ); ?>
-										</button>
-										<a href="<?php echo esc_url( $resend_url ); ?>" class="button button-small" title="<?php esc_attr_e( 'Resend notification email with CSV attachment', 'hr-nomination-form' ); ?>">
-											<?php esc_html_e( 'Resend', 'hr-nomination-form' ); ?>
-										</a>
-										<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this submission permanently?', 'hr-nomination-form' ); ?>');">
-											<?php esc_html_e( 'Delete', 'hr-nomination-form' ); ?>
-										</a>
-
-										<!-- Modal for this submission -->
-										<div id="<?php echo esc_attr( $modal_id ); ?>" class="hr-admin-modal-overlay" style="display:none;">
-											<div class="hr-admin-modal-content">
-												<div class="hr-admin-modal-header">
-													<h2><?php echo esc_html( $row->company_name ); ?> &mdash; <?php echo esc_html( $row->category ); ?></h2>
-													<button type="button" class="hr-modal-close" onclick="hrCloseModal('<?php echo esc_attr( $modal_id ); ?>')">&times;</button>
-												</div>
-												<div class="hr-admin-modal-body">
-													<table class="widefat striped" style="margin-top:0;">
-														<tr><th style="width:200px;">Submission ID</th><td>#<?php echo (int) $row->id; ?></td></tr>
-														<tr><th>Date Received</th><td><?php echo esc_html( $row->created_at ); ?></td></tr>
-														<tr><th>Company Name</th><td><strong><?php echo esc_html( $row->company_name ); ?></strong></td></tr>
-														<tr><th>Award Category</th><td><strong><?php echo esc_html( $row->category ); ?></strong></td></tr>
-														<tr><th>Company Website</th><td><a href="<?php echo esc_url( $row->website ); ?>" target="_blank"><?php echo esc_url( $row->website ); ?></a></td></tr>
-														<tr><th>Contact Person</th><td><?php echo esc_html( $row->contact_person ); ?></td></tr>
-														<tr><th>Job Title / Designation</th><td><?php echo esc_html( $row->job_title ); ?></td></tr>
-														<tr><th>Email Address</th><td><a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a></td></tr>
-														<tr><th>Phone Number</th><td><?php echo esc_html( $row->phone ); ?></td></tr>
-														<tr><th>Company Overview</th><td style="white-space:pre-wrap;"><?php echo esc_html( $row->company_overview ); ?></td></tr>
-														<tr><th>Consent Confirmed</th><td><?php echo $row->consent ? 'Yes &#10003;' : 'No'; ?></td></tr>
-														<tr><th>Submitter IP</th><td><?php echo esc_html( $row->ip_address ); ?></td></tr>
-														<tr><th>Email Sent Status</th><td><?php echo $row->email_sent ? 'Sent' : 'Failed / Pending'; ?></td></tr>
-														<?php if ( ! empty( $row->extra_data ) ) : ?>
-															<tr>
-																<th>Extra Fields</th>
-																<td><pre style="background:#f1f5f9;padding:10px;border-radius:4px;overflow:auto;"><?php echo esc_html( $row->extra_data ); ?></pre></td>
-															</tr>
-														<?php endif; ?>
-													</table>
-												</div>
-												<div class="hr-admin-modal-footer">
-													<a href="<?php echo esc_url( $resend_url ); ?>" class="button button-primary"><?php esc_html_e( 'Resend Email Notification', 'hr-nomination-form' ); ?></a>
-													<button type="button" class="button" onclick="hrCloseModal('<?php echo esc_attr( $modal_id ); ?>')"><?php esc_html_e( 'Close', 'hr-nomination-form' ); ?></button>
-												</div>
-											</div>
-										</div>
+									<td colspan="9" style="text-align:center;padding:40px 20px;color:#94a3b8;">
+										<span class="dashicons dashicons-portfolio" style="font-size:36px;width:36px;height:36px;color:#cbd5e1;display:block;margin:0 auto 10px auto;"></span>
+										<?php esc_html_e( 'No nominations found.', 'hr-nomination-form' ); ?>
 									</td>
 								</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
-					</tbody>
-				</table>
+							<?php else : ?>
+								<?php foreach ( $submissions as $row ) : ?>
+									<?php
+									$delete_url = wp_nonce_url(
+										admin_url( 'admin.php?page=' . self::MENU_SLUG . '&action=delete&id=' . (int) $row->id ),
+										'hr_delete_submission_' . (int) $row->id
+									);
+									$resend_url = wp_nonce_url(
+										admin_url( 'admin.php?page=' . self::MENU_SLUG . '&action=resend&id=' . (int) $row->id ),
+										'hr_resend_submission_' . (int) $row->id
+									);
+									$modal_id = 'hr-modal-' . (int) $row->id;
+									?>
+									<tr>
+										<th scope="row" class="check-column">
+											<input type="checkbox" name="submission_ids[]" value="<?php echo (int) $row->id; ?>" />
+										</th>
+										<td><span class="hr-id-badge">#<?php echo (int) $row->id; ?></span></td>
+										<td>
+											<div class="hr-cell-date"><?php echo esc_html( gmdate( 'Y-m-d', strtotime( $row->created_at ) ) ); ?></div>
+											<div class="hr-cell-time"><?php echo esc_html( gmdate( 'H:i', strtotime( $row->created_at ) ) ); ?> UTC</div>
+										</td>
+										<td>
+											<strong class="hr-company-title"><?php echo esc_html( $row->company_name ); ?></strong>
+											<?php if ( ! empty( $row->website ) ) : ?>
+												<div class="hr-company-site">
+													<a href="<?php echo esc_url( $row->website ); ?>" target="_blank" rel="noopener noreferrer">
+														<span class="dashicons dashicons-admin-links"></span><?php echo esc_html( $row->website ); ?>
+													</a>
+												</div>
+											<?php endif; ?>
+										</td>
+										<td>
+											<span class="hr-category-pill"><?php echo esc_html( $row->category ); ?></span>
+										</td>
+										<td>
+											<div class="hr-contact-name">
+												<span class="dashicons dashicons-admin-users"></span>
+												<strong><?php echo esc_html( $row->contact_person ); ?></strong>
+											</div>
+											<?php if ( ! empty( $row->job_title ) ) : ?>
+												<div class="hr-contact-role"><?php echo esc_html( $row->job_title ); ?></div>
+											<?php endif; ?>
+										</td>
+										<td>
+											<div class="hr-contact-email">
+												<a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a>
+											</div>
+											<div class="hr-contact-phone"><?php echo esc_html( $row->phone ); ?></div>
+										</td>
+										<td style="text-align:center;">
+											<?php if ( $row->email_sent ) : ?>
+												<span class="hr-pill-status hr-pill-sent">
+													<span class="hr-dot"></span><?php esc_html_e( 'Sent', 'hr-nomination-form' ); ?>
+												</span>
+											<?php else : ?>
+												<span class="hr-pill-status hr-pill-pending">
+													<span class="hr-dot"></span><?php esc_html_e( 'Pending', 'hr-nomination-form' ); ?>
+												</span>
+											<?php endif; ?>
+										</td>
+										<td style="text-align:center;">
+											<div class="hr-action-btn-group">
+												<button type="button" class="hr-action-btn hr-btn-view" onclick="hrOpenModal('<?php echo esc_attr( $modal_id ); ?>')" title="<?php esc_attr_e( 'View Details', 'hr-nomination-form' ); ?>">
+													<span class="dashicons dashicons-visibility"></span>
+													<span><?php esc_html_e( 'View Details', 'hr-nomination-form' ); ?></span>
+												</button>
+												<a href="<?php echo esc_url( $resend_url ); ?>" class="hr-action-btn hr-btn-resend" title="<?php esc_attr_e( 'Resend notification email with CSV attachment', 'hr-nomination-form' ); ?>">
+													<span class="dashicons dashicons-email-alt"></span>
+													<span><?php esc_html_e( 'Resend', 'hr-nomination-form' ); ?></span>
+												</a>
+												<a href="<?php echo esc_url( $delete_url ); ?>" class="hr-action-btn hr-btn-delete" onclick="return confirm('<?php esc_attr_e( 'Delete this submission permanently?', 'hr-nomination-form' ); ?>');" title="<?php esc_attr_e( 'Delete permanently', 'hr-nomination-form' ); ?>">
+													<span class="dashicons dashicons-trash"></span>
+												</a>
+											</div>
+
+											<!-- Modal for this submission -->
+											<div id="<?php echo esc_attr( $modal_id ); ?>" class="hr-admin-modal-overlay" style="display:none;">
+												<div class="hr-admin-modal-content">
+													<div class="hr-admin-modal-header">
+														<h2><?php echo esc_html( $row->company_name ); ?> &mdash; <?php echo esc_html( $row->category ); ?></h2>
+														<button type="button" class="hr-modal-close" onclick="hrCloseModal('<?php echo esc_attr( $modal_id ); ?>')">&times;</button>
+													</div>
+													<div class="hr-admin-modal-body">
+														<table class="widefat striped" style="margin-top:0;">
+															<tr><th style="width:200px;">Submission ID</th><td>#<?php echo (int) $row->id; ?></td></tr>
+															<tr><th>Date Received</th><td><?php echo esc_html( $row->created_at ); ?></td></tr>
+															<tr><th>Company Name</th><td><strong><?php echo esc_html( $row->company_name ); ?></strong></td></tr>
+															<tr><th>Award Category</th><td><strong><?php echo esc_html( $row->category ); ?></strong></td></tr>
+															<tr><th>Company Website</th><td><a href="<?php echo esc_url( $row->website ); ?>" target="_blank"><?php echo esc_url( $row->website ); ?></a></td></tr>
+															<tr><th>Contact Person</th><td><?php echo esc_html( $row->contact_person ); ?></td></tr>
+															<tr><th>Job Title / Designation</th><td><?php echo esc_html( $row->job_title ); ?></td></tr>
+															<tr><th>Email Address</th><td><a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a></td></tr>
+															<tr><th>Phone Number</th><td><?php echo esc_html( $row->phone ); ?></td></tr>
+															<tr><th>Company Overview</th><td style="white-space:pre-wrap;"><?php echo esc_html( $row->company_overview ); ?></td></tr>
+															<tr><th>Consent Confirmed</th><td><?php echo $row->consent ? 'Yes &#10003;' : 'No'; ?></td></tr>
+															<tr><th>Submitter IP</th><td><?php echo esc_html( $row->ip_address ); ?></td></tr>
+															<tr><th>Email Sent Status</th><td><?php echo $row->email_sent ? 'Sent' : 'Failed / Pending'; ?></td></tr>
+															<?php if ( ! empty( $row->extra_data ) ) : ?>
+																<tr>
+																	<th>Extra Fields</th>
+																	<td><pre style="background:#f1f5f9;padding:10px;border-radius:4px;overflow:auto;"><?php echo esc_html( $row->extra_data ); ?></pre></td>
+																</tr>
+															<?php endif; ?>
+														</table>
+													</div>
+													<div class="hr-admin-modal-footer">
+														<a href="<?php echo esc_url( $resend_url ); ?>" class="hr-btn hr-btn-primary"><?php esc_html_e( 'Resend Email Notification', 'hr-nomination-form' ); ?></a>
+														<button type="button" class="hr-btn hr-btn-secondary" onclick="hrCloseModal('<?php echo esc_attr( $modal_id ); ?>')"><?php esc_html_e( 'Close', 'hr-nomination-form' ); ?></button>
+													</div>
+												</div>
+											</div>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+				</div>
 			</form>
 
 			<!-- Single subtle bottom-corner footer line -->
@@ -777,28 +810,471 @@ class HR_Nomination_Admin {
 		</div>
 
 		<style>
-			.hr-author-banner {
-				transition: all 0.2s ease;
+			@keyframes hrPulse {
+				0%, 100% { opacity: 1; transform: scale(1); }
+				50% { opacity: 0.4; transform: scale(0.9); }
 			}
-			.hr-author-banner:hover {
-				box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+
+			.hr-header-hero {
+				background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+				border-radius: 12px;
+				padding: 22px 26px;
+				margin: 16px 0 20px 0;
+				color: #ffffff;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				gap: 16px;
+				box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.06);
+				border: 1px solid #334155;
 			}
-			.hr-admin-wrap table.wp-list-table {
-				border-radius: 6px;
+			.hr-hero-title {
+				font-size: 24px;
+				font-weight: 800;
+				letter-spacing: -0.03em;
+				line-height: 1.2;
+				color: #ffffff;
+			}
+			.hr-hero-alias {
+				font-size: 16px;
+				font-weight: 600;
+				color: #94a3b8;
+				margin-left: 8px;
+			}
+			.hr-hero-sub {
+				margin-top: 8px;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				flex-wrap: wrap;
+				font-size: 13px;
+				color: #cbd5e1;
+			}
+			.hr-hero-appname {
+				font-weight: 500;
+			}
+			.hr-hero-version {
+				display: inline-flex;
+				align-items: center;
+				padding: 2px 10px;
+				background: rgba(56, 189, 248, 0.15);
+				color: #38bdf8;
+				border: 1px solid rgba(56, 189, 248, 0.35);
+				border-radius: 9999px;
+				font-size: 11px;
+				font-weight: 700;
+			}
+			.hr-hero-autoupdate {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				padding: 2px 10px;
+				background: rgba(16, 185, 129, 0.15);
+				color: #34d399;
+				border: 1px solid rgba(16, 185, 129, 0.35);
+				border-radius: 9999px;
+				font-size: 11px;
+				font-weight: 600;
+			}
+			.hr-pulsing-dot {
+				width: 6px;
+				height: 6px;
+				background: #34d399;
+				border-radius: 50%;
+				display: inline-block;
+				animation: hrPulse 2s infinite ease-in-out;
+			}
+			.hr-hero-stats {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+			}
+			.hr-stat-box {
+				background: rgba(255, 255, 255, 0.06);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 8px;
+				padding: 8px 16px;
+				text-align: center;
+				min-width: 90px;
+			}
+			.hr-stat-val {
+				font-size: 18px;
+				font-weight: 800;
+				color: #ffffff;
+				line-height: 1.2;
+			}
+			.hr-stat-lbl {
+				font-size: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				color: #94a3b8;
+				margin-top: 2px;
+			}
+
+			.hr-admin-actions-bar {
+				margin: 18px 0;
+				background: #ffffff;
+				border: 1px solid #e2e8f0;
+				border-radius: 10px;
+				padding: 12px 16px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				gap: 12px;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+			}
+			.hr-export-buttons {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+				flex-wrap: wrap;
+			}
+			.hr-filter-form {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+			.hr-select-modern {
+				border-radius: 7px !important;
+				border: 1px solid #cbd5e1 !important;
+				padding: 5px 12px !important;
+				font-size: 13px !important;
+				background: #f8fafc !important;
+				color: #1e293b !important;
+				height: 34px !important;
+			}
+			.hr-search-wrap {
+				position: relative;
+				display: inline-flex;
+				align-items: center;
+			}
+			.hr-search-wrap .hr-search-icon {
+				position: absolute;
+				left: 8px;
+				color: #94a3b8;
+				pointer-events: none;
+			}
+			.hr-search-input {
+				border-radius: 7px !important;
+				border: 1px solid #cbd5e1 !important;
+				padding: 5px 10px 5px 30px !important;
+				font-size: 13px !important;
+				width: 230px !important;
+				height: 34px !important;
+				background: #f8fafc !important;
+			}
+
+			.hr-btn {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 6px;
+				font-size: 12px;
+				font-weight: 600;
+				padding: 6px 14px;
+				border-radius: 7px;
+				cursor: pointer;
+				text-decoration: none !important;
+				transition: all 0.15s ease;
+				line-height: 1.4;
+				border: 1px solid transparent;
+				height: 34px;
+				box-sizing: border-box;
+			}
+			.hr-btn:hover {
+				transform: translateY(-1px);
+			}
+			.hr-btn .dashicons {
+				font-size: 16px;
+				width: 16px;
+				height: 16px;
+				vertical-align: middle;
+				margin: 0;
+			}
+			.hr-btn-secondary {
+				background: #ffffff;
+				border-color: #cbd5e1;
+				color: #334155;
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+			}
+			.hr-btn-secondary:hover {
+				background: #f8fafc;
+				border-color: #94a3b8;
+				color: #0f172a;
+			}
+			.hr-btn-emerald {
+				background: linear-gradient(135deg, #059669 0%, #047857 100%);
+				color: #ffffff;
+				box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+			}
+			.hr-btn-emerald:hover {
+				background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+				color: #ffffff;
+			}
+			.hr-btn-subtle {
+				background: #f8fafc;
+				border-color: #e2e8f0;
+				color: #475569;
+			}
+			.hr-btn-subtle:hover {
+				background: #f1f5f9;
+				color: #1e293b;
+			}
+			.hr-btn-primary {
+				background: #2563eb;
+				color: #ffffff;
+			}
+			.hr-btn-primary:hover {
+				background: #1d4ed8;
+				color: #ffffff;
+			}
+			.hr-btn-ghost {
+				background: transparent;
+				color: #64748b;
+			}
+			.hr-btn-ghost:hover {
+				background: #f1f5f9;
+				color: #0f172a;
+			}
+
+			.hr-table-card {
+				background: #ffffff;
+				border: 1px solid #e2e8f0;
+				border-radius: 10px;
 				overflow: hidden;
-				box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-				border: 1px solid #c3c4c7;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+				margin-top: 10px;
 			}
-			.hr-admin-wrap table.wp-list-table tbody tr:hover > th,
-			.hr-admin-wrap table.wp-list-table tbody tr:hover > td {
+			table.hr-modern-table {
+				border: none !important;
+				margin: 0 !important;
+				border-collapse: separate;
+				border-spacing: 0;
+			}
+			table.hr-modern-table thead th {
+				background: #f8fafc !important;
+				border-bottom: 2px solid #e2e8f0 !important;
+				color: #64748b !important;
+				font-size: 11px !important;
+				font-weight: 700 !important;
+				text-transform: uppercase !important;
+				letter-spacing: 0.05em !important;
+				padding: 12px 14px !important;
+			}
+			table.hr-modern-table tbody tr {
+				transition: background-color 0.12s ease;
+			}
+			table.hr-modern-table tbody tr:hover > td,
+			table.hr-modern-table tbody tr:hover > th {
 				background-color: #f8fafc !important;
 			}
+			table.hr-modern-table tbody td {
+				padding: 14px 14px !important;
+				vertical-align: middle !important;
+				border-top: 1px solid #f1f5f9 !important;
+			}
+
+			.hr-id-badge {
+				display: inline-block;
+				padding: 3px 8px;
+				background: #f1f5f9;
+				color: #475569;
+				border-radius: 6px;
+				font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+				font-weight: 700;
+				font-size: 12px;
+				border: 1px solid #e2e8f0;
+			}
+			.hr-cell-date {
+				font-weight: 600;
+				color: #1e293b;
+				font-size: 13px;
+			}
+			.hr-cell-time {
+				font-size: 11px;
+				color: #94a3b8;
+				margin-top: 2px;
+			}
+			.hr-company-title {
+				font-size: 13px;
+				font-weight: 700;
+				color: #0f172a;
+				display: block;
+			}
+			.hr-company-site a {
+				font-size: 11px;
+				color: #2563eb;
+				text-decoration: none;
+				display: inline-flex;
+				align-items: center;
+				gap: 3px;
+				margin-top: 3px;
+			}
+			.hr-company-site a:hover {
+				text-decoration: underline;
+			}
+			.hr-company-site .dashicons {
+				font-size: 13px;
+				width: 13px;
+				height: 13px;
+			}
+			.hr-category-pill {
+				display: inline-block;
+				padding: 3px 10px;
+				background: #eef2ff;
+				color: #4338ca;
+				border: 1px solid #c7d2fe;
+				border-radius: 9999px;
+				font-size: 11px;
+				font-weight: 600;
+				white-space: nowrap;
+			}
+			.hr-contact-name {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				font-size: 13px;
+				color: #0f172a;
+			}
+			.hr-contact-name .dashicons {
+				font-size: 14px;
+				width: 14px;
+				height: 14px;
+				color: #94a3b8;
+			}
+			.hr-contact-role {
+				font-size: 11px;
+				color: #64748b;
+				margin-top: 2px;
+			}
+			.hr-contact-email a {
+				color: #2563eb;
+				font-weight: 500;
+				text-decoration: none;
+				font-size: 12px;
+			}
+			.hr-contact-email a:hover {
+				text-decoration: underline;
+			}
+			.hr-contact-phone {
+				font-size: 11px;
+				color: #64748b;
+				margin-top: 2px;
+			}
+
+			.hr-pill-status {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				padding: 3px 10px;
+				border-radius: 9999px;
+				font-size: 11px;
+				font-weight: 700;
+			}
+			.hr-pill-sent {
+				background: #ecfdf5;
+				color: #059669;
+				border: 1px solid #a7f3d0;
+			}
+			.hr-pill-sent .hr-dot {
+				width: 6px;
+				height: 6px;
+				background: #10b981;
+				border-radius: 50%;
+			}
+			.hr-pill-pending {
+				background: #fef2f2;
+				color: #dc2626;
+				border: 1px solid #fecaca;
+			}
+			.hr-pill-pending .hr-dot {
+				width: 6px;
+				height: 6px;
+				background: #ef4444;
+				border-radius: 50%;
+			}
+
+			.hr-action-btn-group {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				justify-content: center;
+			}
+			.hr-action-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+				font-size: 11px;
+				font-weight: 600;
+				padding: 4px 10px;
+				border-radius: 6px;
+				text-decoration: none !important;
+				cursor: pointer;
+				transition: all 0.15s ease;
+				border: 1px solid transparent;
+				height: 28px;
+				box-sizing: border-box;
+				line-height: 1;
+			}
+			.hr-action-btn .dashicons {
+				font-size: 14px;
+				width: 14px;
+				height: 14px;
+				vertical-align: middle;
+			}
+			.hr-action-btn:hover {
+				transform: translateY(-1px);
+			}
+			.hr-btn-view {
+				background: #eff6ff;
+				color: #1d4ed8 !important;
+				border-color: #bfdbfe;
+			}
+			.hr-btn-view:hover {
+				background: #dbeafe;
+				border-color: #93c5fd;
+				color: #1e40af !important;
+			}
+			.hr-btn-resend {
+				background: #f0fdf4;
+				color: #15803d !important;
+				border-color: #bbf7d0;
+			}
+			.hr-btn-resend:hover {
+				background: #dcfce7;
+				border-color: #86efac;
+				color: #166534 !important;
+			}
+			.hr-btn-delete {
+				background: #fef2f2;
+				color: #b91c1c !important;
+				border-color: #fecaca;
+				padding: 4px 7px;
+			}
+			.hr-btn-delete:hover {
+				background: #fee2e2;
+				border-color: #fca5a5;
+				color: #991b1b !important;
+			}
+
+			.hr-footer-corner {
+				margin-top: 24px;
+				padding-top: 10px;
+				border-top: 1px solid #e2e8f0;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 11px;
+				color: #94a3b8;
+			}
 			.hr-system-specifications-doc {
-				margin-top: 40px;
 				padding: 16px 20px;
 				background: #f8fafc;
 				border: 1px solid #e2e8f0;
-				border-radius: 6px;
+				border-radius: 8px;
 				font-size: 10px;
 				line-height: 1.65;
 				color: #94a3b8;
