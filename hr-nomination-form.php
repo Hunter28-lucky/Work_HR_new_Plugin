@@ -3,11 +3,11 @@
  * Plugin Name:       HR Nomination Form
  * Plugin URI:        https://github.com/Hunter28-lucky/Work_HR_new_Plugin
  * Description:       Fixes and handles HR nomination HTML forms, captures submissions via admin-post, sends HTML emails with attached CSV, provides database logging with CSV/Excel exports, and supports GitHub auto-updates.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * Author:            HR Tech Insight
- * Author URI:        https://hrtechinsight.com
+ * Author:            Harshvardhan Kumar (Krish Goswami)
+ * Author URI:        https://github.com/Hunter28-lucky
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       hr-nomination-form
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'HR_NOMINATION_VERSION', '1.0.1' );
+define( 'HR_NOMINATION_VERSION', '1.0.2' );
 define( 'HR_NOMINATION_PLUGIN_FILE', __FILE__ );
 define( 'HR_NOMINATION_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'HR_NOMINATION_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );

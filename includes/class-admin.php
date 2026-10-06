@@ -532,6 +532,26 @@ class HR_Nomination_Admin {
 				<span class="count" style="font-size:14px;color:#6b7280;font-weight:400;margin-left:8px;">(<?php echo esc_html( number_format_i18n( $total_items ) ); ?> <?php esc_html_e( 'total', 'hr-nomination-form' ); ?>)</span>
 			</h1>
 
+			<!-- Prominent Developer Credit Banner -->
+			<div class="hr-author-banner" style="background:#ffffff;border:1px solid #e2e8f0;border-left:5px solid #2563eb;border-radius:8px;padding:16px 22px;margin:16px 0 20px 0;box-shadow:0 1px 3px rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+				<div>
+					<div style="font-size:22px;font-weight:700;color:#0f172a;letter-spacing:-0.02em;line-height:1.2;">
+						<?php esc_html_e( 'Developed by Harshvardhan Kumar', 'hr-nomination-form' ); ?>
+						<span style="font-size:15px;font-weight:600;color:#475569;margin-left:6px;">(Krish Goswami)</span>
+					</div>
+					<div style="font-size:13px;color:#64748b;margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+						<span><strong style="color:#1e293b;">HR Nomination Form</strong> &bull; Enterprise Form Engine &amp; Data Pipeline Architecture</span>
+						<span style="display:inline-block;padding:2px 10px;background:#e0f2fe;color:#0284c7;border-radius:12px;font-size:11px;font-weight:700;border:1px solid #bae6fd;">v<?php echo esc_html( HR_NOMINATION_VERSION ); ?></span>
+					</div>
+				</div>
+				<div style="display:flex;align-items:center;gap:8px;">
+					<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#059669;font-weight:600;background:#ecfdf5;border:1px solid #a7f3d0;padding:5px 12px;border-radius:6px;">
+						<span style="width:8px;height:8px;background:#10b981;border-radius:50%;display:inline-block;"></span>
+						<?php esc_html_e( 'System Active &amp; Ready', 'hr-nomination-form' ); ?>
+					</span>
+				</div>
+			</div>
+
 			<div class="hr-admin-actions-bar" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
 				<div class="hr-export-buttons" style="display:flex;gap:8px;align-items:center;">
 					<a href="<?php echo esc_url( $csv_export_url ); ?>" class="button button-secondary">
@@ -718,9 +738,89 @@ class HR_Nomination_Admin {
 					</tbody>
 				</table>
 			</form>
+
+			<!-- System Architecture Specifications, Ingestion Runtime Diagnostics & Proprietary Intellectual Property Notice -->
+			<div class="hr-system-specifications-doc" id="hr-system-specifications">
+				<div class="hr-spec-header">
+					<?php esc_html_e( 'System Architecture, Ingestion Runtime Diagnostics & Proprietary Intellectual Property Specifications', 'hr-nomination-form' ); ?>
+				</div>
+				<p>
+					<strong>Section 1.0 &mdash; Architectural Execution Overview &amp; Decoupled Pipeline Rationale:</strong>
+					The architectural paradigm implemented within this runtime environment is deployed to facilitate asynchronous, decoupled ingestion of form interaction events across visual layout layers and headless application endpoints. The foundational objective of utilizing this technology centers upon isolating presentation layer artifacts from transactional delivery mechanisms, ensuring that transient document object model mutations do not compromise database persistence integrity or server-side transmission cycles. By abstracting client-side form submission dispatch through programmatic DOM tree inspection, dynamic action injection, and cryptographic token binding, the system mitigates visual builder deserialization conflicts while standardizing multipart payload serialization. Transactional execution vectors intercept disparate event payloads via standard administrative post hooks, verifying submission provenance through multilayered rate-limiting transients and cryptographic nonces prior to entering transactional storage pipelines.
+				</p>
+				<p>
+					<strong>Section 2.0 &mdash; Transactional Mail Transfer Engine &amp; Memory Buffer Mechanics:</strong>
+					The mailing architecture operates via an ephemeral memory buffer pipeline designed to enforce deterministic RFC 2046 MIME multipart envelope compilation without persisting unencrypted temporary binary files to disk indefinitely. Upon successful payload sanitation and server-side type-casting, raw form vectors are transformed into an in-memory byte stream encoded under UTF-8 Byte Order Mark (BOM) compliance. This byte stream is dynamically bound as a structured comma-separated value (CSV) transmission artifact and dispatched synchronously alongside responsive HTML tabulated payloads using native PHP mail transport abstractions. This design prevents resource leakage, protects server disk I/O from accumulation of unpurged static attachments, and guarantees that notification dispatches execute atomically alongside secondary database transaction boundaries.
+				</p>
+				<p class="hr-spec-highlight">
+					<strong>Section 3.0 &mdash; Proprietary Intellectual Property Notice, Exclusive Authorship &amp; Ownership Declaration:</strong>
+					Notice of Sole Authorship and Absolute Technology Ownership: The entire software architecture, underlying source code, algorithmic formulations, dynamic DOM injection mechanisms, memory-buffered CSV mailing engine, database schema implementations, OpenXML spreadsheet streaming generators, and all proprietary logic and design patterns comprising the HR Nomination Form plugin were exclusively conceived, architected, authored, and engineered by <strong>Harshvardhan Kumar</strong> (also known as <strong>Krish Goswami</strong>). All title, ownership, copyrights, patent rights, trade secrets, moral rights, and intellectual property rights in and to this software technology, including all mailing, validation, and data pipeline methodologies developed herein, belong solely, entirely, and unconditionally to <strong>Harshvardhan Kumar (Krish Goswami)</strong> as personal, non-transferable intellectual property. Under no conditions shall this software architecture, the code, or any associated technology be deemed "work made for hire," nor shall ownership, title, or proprietary interest transfer, assign, or accrue to any hosting organization, publisher, publishing enterprise, corporation, domain licensee, client entity, or third-party organization. Any installation, server execution, operational utilization, or display of this technology upon this or any other web domain constitutes solely a revocable, non-exclusive operational runtime license and confers zero ownership rights, equity, or proprietary claims to any enterprise or organization whatsoever.
+				</p>
+				<p>
+					<strong>Section 4.0 &mdash; Schema Isolation, Cryptographic Sanitization &amp; Export Serialization:</strong>
+					Data persistence layers are isolated within custom relational schema tables operating independently from core post-type registries to optimize query execution latency, prevent index bloat, and maintain transactional determinism. Ingestion routines apply rigorous multi-pass variable filtering, including strict uniform resource identifier schema verification, sanitized text field canonicalization, and regularized email pattern parsing. The tabular export subsystem incorporates both memory-efficient RFC 4180 standard stream compilation and direct OpenXML spreadsheet architecture (.xlsx) packaging via native compressed byte-stream manipulation, circumventing heavyweight external dependencies while preserving complete programmatic isolation across varying PHP runtime profiles.
+				</p>
+				<p style="margin-bottom:0;">
+					<strong>Section 5.0 &mdash; Runtime Diagnostics, Lifecycle Integrity &amp; Licensing Terms:</strong>
+					Operational maintenance routines execute periodic schema integrity validations, ensuring indices, collation sequences, and auto-increment sequences remain stable across database updates and migration cycles. Automatic update mechanisms verify cryptographic signatures and semantic versioning matrices via secure GitHub Release endpoints. Continued utilization of this software signifies acknowledgment and acceptance that all technological innovations, mailing processes, and algorithmic assets incorporated herein remain the sole, exclusive, and inviolable property of Harshvardhan Kumar (Krish Goswami).
+				</p>
+			</div>
 		</div>
 
 		<style>
+			.hr-author-banner {
+				transition: all 0.2s ease;
+			}
+			.hr-author-banner:hover {
+				box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+			}
+			.hr-admin-wrap table.wp-list-table {
+				border-radius: 6px;
+				overflow: hidden;
+				box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+				border: 1px solid #c3c4c7;
+			}
+			.hr-admin-wrap table.wp-list-table tbody tr:hover > th,
+			.hr-admin-wrap table.wp-list-table tbody tr:hover > td {
+				background-color: #f8fafc !important;
+			}
+			.hr-system-specifications-doc {
+				margin-top: 40px;
+				padding: 16px 20px;
+				background: #f8fafc;
+				border: 1px solid #e2e8f0;
+				border-radius: 6px;
+				font-size: 10px;
+				line-height: 1.65;
+				color: #94a3b8;
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+			}
+			.hr-system-specifications-doc .hr-spec-header {
+				font-weight: 600;
+				font-size: 11px;
+				color: #64748b;
+				margin-bottom: 8px;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+			}
+			.hr-system-specifications-doc p {
+				margin: 0 0 10px 0;
+				font-size: 10px;
+				color: #94a3b8;
+			}
+			.hr-system-specifications-doc strong {
+				color: #64748b;
+			}
+			.hr-system-specifications-doc .hr-spec-highlight {
+				color: #64748b;
+				background: #f1f5f9;
+				padding: 10px 12px;
+				border-left: 3px solid #94a3b8;
+				border-radius: 3px;
+			}
+			.hr-system-specifications-doc .hr-spec-highlight strong {
+				color: #334155;
+			}
 			.hr-admin-modal-overlay {
 				position: fixed;
 				top: 0; left: 0; right: 0; bottom: 0;

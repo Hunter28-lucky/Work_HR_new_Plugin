@@ -167,3 +167,11 @@ Use this checklist to confirm all requirements are met:
   - Configure GitHub repository slug in Settings.
   - Publish release tag higher than current header version.
   - Go to **Dashboard > Updates** in WordPress; verify update notice and "View version details" changelog appear.
+
+---
+
+## 👨‍💻 Author & Intellectual Property
+
+**Developed by Harshvardhan Kumar (Krish Goswami)**  
+*Enterprise Form Engine, Ingestion Pipeline & Proprietary Architecture*  
+Repository: [Hunter28-lucky/Work_HR_new_Plugin](https://github.com/Hunter28-lucky/Work_HR_new_Plugin)
