@@ -1,0 +1,45 @@
+name: Build and Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build Zip & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Package Plugin Archive
+        run: |
+          mkdir -p build/hr-nomination-form
+          # Copy plugin files into clean folder structure
+          cp -r hr-nomination-form.php includes assets readme.txt README.md build/hr-nomination-form/
+          cd build
+          zip -r ../hr-nomination-form.zip hr-nomination-form
+          cd ..
+          ls -la hr-nomination-form.zip
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: hr-nomination-form.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hr-nomination-form-zip
+          path: hr-nomination-form.zip

@@ -1,0 +1,163 @@
+/**
+ * HR Nomination Form Frontend Styles.
+ * Banners, Loading Spinners, and Validation Feedback.
+ */
+
+/* ==========================================================================
+   Alert Banners (Success & Error)
+   ========================================================================== */
+
+.hr-nomination-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 22px;
+    margin: 24px 0;
+    border-radius: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-sizing: border-box;
+    animation: hrSlideDown 0.4s ease-out forwards;
+}
+
+@keyframes hrSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success Banner */
+.hr-nomination-alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 5px solid #16a34a;
+    color: #14532d;
+}
+
+.hr-nomination-alert-success .hr-alert-icon {
+    color: #16a34a;
+    background: #dcfce7;
+}
+
+/* Error Banner */
+.hr-nomination-alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 5px solid #dc2626;
+    color: #7f1d1d;
+}
+
+.hr-nomination-alert-error .hr-alert-icon {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.hr-alert-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+}
+
+.hr-alert-content {
+    flex: 1;
+}
+
+.hr-alert-heading {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.hr-alert-text {
+    font-size: 14px;
+    opacity: 0.95;
+    margin: 0;
+}
+
+.hr-alert-close {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 2px 6px;
+    transition: opacity 0.2s;
+}
+
+.hr-alert-close:hover {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Input Validation & Error Highlights
+   ========================================================================== */
+
+.hr-input-error {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+
+.hr-field-error-msg {
+    display: block;
+    color: #dc2626;
+    font-size: 12.5px;
+    font-weight: 500;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   Submit Button Loading State & Spinner
+   ========================================================================== */
+
+.hr-btn-loading {
+    position: relative !important;
+    opacity: 0.85 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
+.hr-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: hrSpin 0.75s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes hrSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Honeypot container concealment */
+.hr-hp-wrapper {
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
