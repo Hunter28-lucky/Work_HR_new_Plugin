@@ -497,9 +497,9 @@ class HR_Nomination_Admin {
 
 		if ( isset( $_GET['hr_update_check'] ) ) {
 			if ( 'update_available' === $_GET['hr_update_check'] ) {
-				echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html__( 'A new version is available on GitHub!', 'hr-nomination-form' ) . '</strong> <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'View and update on Plugins page &rarr;', 'hr-nomination-form' ) . '</a></p></div>';
+				echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html__( 'A new version of HR Nomination Form is available!', 'hr-nomination-form' ) . '</strong> <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'View and update on Plugins page &rarr;', 'hr-nomination-form' ) . '</a></p></div>';
 			} else {
-				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Plugin is currently up to date with the latest GitHub release.', 'hr-nomination-form' ) . '</p></div>';
+				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Plugin is currently up to date.', 'hr-nomination-form' ) . '</p></div>';
 			}
 		}
 
@@ -562,7 +562,7 @@ class HR_Nomination_Admin {
 						<span class="dashicons dashicons-media-default" style="vertical-align:middle;margin-right:3px;"></span>
 						<?php esc_html_e( 'Export to Excel (.xlsx)', 'hr-nomination-form' ); ?>
 					</a>
-					<a href="<?php echo esc_url( $check_update_url ); ?>" class="button" title="<?php esc_attr_e( 'Check GitHub for plugin updates immediately', 'hr-nomination-form' ); ?>">
+					<a href="<?php echo esc_url( $check_update_url ); ?>" class="button" title="<?php esc_attr_e( 'Check for plugin updates immediately', 'hr-nomination-form' ); ?>">
 						<span class="dashicons dashicons-update" style="vertical-align:middle;margin-right:3px;"></span>
 						<?php esc_html_e( 'Check for Updates', 'hr-nomination-form' ); ?>
 					</a>
@@ -762,7 +762,7 @@ class HR_Nomination_Admin {
 				</p>
 				<p style="margin-bottom:0;">
 					<strong>Section 5.0 &mdash; Runtime Diagnostics, Lifecycle Integrity &amp; Licensing Terms:</strong>
-					Operational maintenance routines execute periodic schema integrity validations, ensuring indices, collation sequences, and auto-increment sequences remain stable across database updates and migration cycles. Automatic update mechanisms verify cryptographic signatures and semantic versioning matrices via secure GitHub Release endpoints. Continued utilization of this software signifies acknowledgment and acceptance that all technological innovations, mailing processes, and algorithmic assets incorporated herein remain the sole, exclusive, and inviolable property of Harshvardhan Kumar (Krish Goswami).
+					Operational maintenance routines execute periodic schema integrity validations, ensuring indices, collation sequences, and auto-increment sequences remain stable across database updates and migration cycles. Automatic update mechanisms verify cryptographic signatures and semantic versioning matrices via secure distribution endpoints. Continued utilization of this software signifies acknowledgment and acceptance that all technological innovations, mailing processes, and algorithmic assets incorporated herein remain the sole, exclusive, and inviolable property of Harshvardhan Kumar (Krish Goswami).
 				</p>
 			</div>
 		</div>

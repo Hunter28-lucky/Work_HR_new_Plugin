@@ -4,11 +4,11 @@ Tags: nomination, hr, form, awards, submissions
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Fixes and handles existing HR nomination HTML forms, emails submission details with CSV attachments, logs submissions with CSV/Excel exports, and supports GitHub auto-updates.
+Fixes and handles existing HR nomination HTML forms, emails submission details with CSV attachments, logs submissions with CSV/Excel exports, and supports automated updates.
 
 == Description ==
 
@@ -22,7 +22,7 @@ HR Nomination Form seamlessly activates broken or unhandled HTML nomination form
 * **Export to CSV & Excel (.xlsx)**: One-click export to CSV or native OpenXML Excel `.xlsx` spreadsheets with bold header formatting. No external Composer packages needed.
 * **Spam & Abuse Protection**: Features intelligent bot verification and IP-based rate limiting (1 submission per IP per 60 seconds).
 * **Frontend Feedback**: Injects accessible success/error banners and disables the submit button with an animated spinner while submitting.
-* **GitHub Auto-Update**: Integrated updater connects to your GitHub repository's latest release, allowing one-click updates directly inside the WordPress Plugins screen.
+* **Automated Updates**: Integrated updater connects to distribution endpoints, allowing one-click updates directly inside the WordPress Plugins screen.
 
 == Installation ==
 
@@ -33,6 +33,10 @@ HR Nomination Form seamlessly activates broken or unhandled HTML nomination form
 
 == Changelog ==
 
+= 1.0.3 =
+* Hid repository hosting details and external links from all admin screens, plugin headers, and update information modals.
+* Enhanced privacy for source code distribution endpoints.
+
 = 1.0.2 =
 * Added prominent developer attribution for Harshvardhan Kumar (Krish Goswami).
 * Added comprehensive system architecture, runtime diagnostics, and proprietary intellectual property documentation in admin footer.
@@ -41,7 +45,7 @@ HR Nomination Form seamlessly activates broken or unhandled HTML nomination form
 = 1.0.1 =
 * Fixed honeypot false-positive with browser autofill by adding client-side JS verification tokens.
 * Added automatic database table initialization on plugin boot, guaranteeing wp_hr_nominations is created even on zip upgrade.
-* Cleaned up Settings UI by hiding internal GitHub repository parameters.
+* Cleaned up Settings UI by hiding internal distribution parameters.
 * Added one-click "Check for Updates" button to Submissions dashboard.
 
 = 1.0.0 =

@@ -163,15 +163,14 @@ Use this checklist to confirm all requirements are met:
   - Click **Export to Excel (.xlsx)**: downloads native OpenXML `.xlsx` spreadsheet that opens in Excel and Google Sheets without warnings.
   - Click "Resend" to verify email re-dispatch.
   - Delete single entry and test bulk delete.
-- [x] **GitHub Auto-Update**:
-  - Configure GitHub repository slug in Settings.
+- [x] **Automated Updates**:
+  - Secure background release verification.
   - Publish release tag higher than current header version.
-  - Go to **Dashboard > Updates** in WordPress; verify update notice and "View version details" changelog appear.
+  - Go to **Dashboard > Updates** in WordPress; verify update notice and changelog appear.
 
 ---
 
 ## 👨‍💻 Author & Intellectual Property
 
 **Developed by Harshvardhan Kumar (Krish Goswami)**  
-*Enterprise Form Engine, Ingestion Pipeline & Proprietary Architecture*  
-Repository: [Hunter28-lucky/Work_HR_new_Plugin](https://github.com/Hunter28-lucky/Work_HR_new_Plugin)
+*Enterprise Form Engine, Ingestion Pipeline & Proprietary Architecture*
