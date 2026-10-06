@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       HR Nomination Form
- * Plugin URI:        https://github.com/hrtechinsight/hr-nomination-form
+ * Plugin URI:        https://github.com/Hunter28-lucky/Work_HR_new_Plugin
  * Description:       Fixes and handles HR nomination HTML forms, captures submissions via admin-post, sends HTML emails with attached CSV, provides database logging with CSV/Excel exports, and supports GitHub auto-updates.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            HR Tech Insight
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'HR_NOMINATION_VERSION', '1.0.0' );
+define( 'HR_NOMINATION_VERSION', '1.0.1' );
 define( 'HR_NOMINATION_PLUGIN_FILE', __FILE__ );
 define( 'HR_NOMINATION_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'HR_NOMINATION_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -100,6 +100,9 @@ class HR_Nomination_Plugin {
 		// Load text domain for translations
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 
+		// Ensure database schema is ready immediately
+		HR_Nomination_Database::ensure_table_exists();
+
 		// Instantiate modules
 		$this->form_handler = new HR_Nomination_Form_Handler();
 		$this->frontend     = new HR_Nomination_Frontend();
@@ -139,10 +142,8 @@ class HR_Nomination_Plugin {
 	 * Activation hook callback.
 	 */
 	public static function activate(): void {
-		// Create or update database schema
-		HR_Nomination_Database::create_tables();
+		HR_Nomination_Database::ensure_table_exists();
 
-		// Set default settings if not already defined
 		if ( false === get_option( 'hr_recipient_email' ) ) {
 			add_option( 'hr_recipient_email', get_option( 'admin_email' ) );
 		}
@@ -167,8 +168,7 @@ class HR_Nomination_Plugin {
 	 * Deactivation hook callback.
 	 */
 	public static function deactivate(): void {
-		// Clean up transients
-		delete_transient( 'hr_gh_rel_' );
+		delete_transient( 'hr_gh_rel_' . md5( 'Hunter28-lucky/Work_HR_new_Plugin' ) );
 	}
 }
 

@@ -1,6 +1,6 @@
 /**
  * HR Nomination Form Frontend Script.
- * Injects form action, nonces, honeypot, validation, submission spinner, and handles feedback banners.
+ * Injects form action, nonces, JS verification tokens, validation, submission spinner, and handles feedback banners.
  */
 (function() {
     'use strict';
@@ -14,7 +14,6 @@
         const forms = findHRForms();
 
         if (!forms || forms.length === 0) {
-            // Check if there is a feedback banner to display even if form selector is customized
             handleUrlFeedback(null);
             return;
         }
@@ -29,7 +28,6 @@
 
     /**
      * Locate existing nomination forms on page.
-     * Looks for .hr-form, forms containing nomination keywords, or WPBakery raw HTML blocks.
      */
     function findHRForms() {
         const found = [];
@@ -40,20 +38,18 @@
             if (el.tagName.toLowerCase() === 'form') {
                 if (!found.includes(el)) found.push(el);
             } else {
-                // If container has a form child
                 const childForm = el.querySelector('form');
                 if (childForm) {
                     if (!found.includes(childForm)) found.push(childForm);
                 } else {
-                    // If .hr-form is a div containing form fields without a <form> tag, wrap it
                     const converted = wrapContainerInForm(el);
                     if (converted && !found.includes(converted)) found.push(converted);
                 }
             }
         });
 
-        // 2. Fallback check for any form with id or class containing hr-nomination
-        const fallbackForms = document.querySelectorAll('form[id*="hr-nomination"], form[class*="hr-nomination"], form[id*="nomination"]');
+        // 2. Fallback check
+        const fallbackForms = document.querySelectorAll('form[id*="hr-nomination"], form[class*="hr-nomination"]');
         fallbackForms.forEach(function(f) {
             if (!found.includes(f)) found.push(f);
         });
@@ -62,13 +58,11 @@
     }
 
     /**
-     * If user placed raw inputs inside a <div class="hr-form"> without a <form> tag,
-     * dynamically wrap the inputs inside a form element.
+     * Wrap raw container in form if necessary.
      */
     function wrapContainerInForm(container) {
         if (!container || container.querySelector('form')) return null;
 
-        // Check if container has inputs or buttons
         const inputs = container.querySelectorAll('input, textarea, select, button');
         if (inputs.length === 0) return null;
 
@@ -105,17 +99,21 @@
             ensureHiddenField(form, 'hr_nomination_nonce', config.nonce);
         }
 
-        // 4. Inject current return URL (stripped of previous nomination params)
+        // 4. Inject current return URL
         const currentUrl = cleanUrlParams(window.location.href);
         ensureHiddenField(form, 'return_url', currentUrl);
 
-        // 5. Inject Spam Honeypot Field
+        // 5. Inject JavaScript verification tokens (proves submission came from real browser)
+        ensureHiddenField(form, 'hr_js_verified', '1');
+        ensureHiddenField(form, 'hr_timestamp', String(Date.now()));
+
+        // 6. Inject concealed honeypot field at end of form
         ensureHoneypotField(form, config.honeypotField || 'hr_nomination_hp');
 
-        // 6. Smart field mapping: Ensure fields have appropriate name attributes
+        // 7. Smart field mapping: Ensure fields have appropriate name attributes
         mapFormFields(form);
 
-        // 7. Attach submit event listener for validation and UI spinner
+        // 8. Attach submit event listener for validation and UI spinner
         form.addEventListener('submit', function(e) {
             handleFormSubmit(e, form, config);
         });
@@ -136,14 +134,14 @@
     }
 
     /**
-     * Inject an invisible honeypot field to trap spam bots.
+     * Inject an invisible honeypot field at the bottom of the form.
      */
     function ensureHoneypotField(form, fieldName) {
         let hpWrap = form.querySelector('.hr-hp-wrapper');
         if (!hpWrap) {
             hpWrap = document.createElement('div');
             hpWrap.className = 'hr-hp-wrapper';
-            hpWrap.style.cssText = 'position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0 !important; overflow:hidden !important; pointer-events:none !important;';
+            hpWrap.style.cssText = 'display:none !important; visibility:hidden !important; position:absolute !important; left:-9999px !important; width:1px !important; height:1px !important; opacity:0 !important; overflow:hidden !important; pointer-events:none !important;';
             hpWrap.setAttribute('aria-hidden', 'true');
 
             const hpInput = document.createElement('input');
@@ -151,16 +149,16 @@
             hpInput.name = fieldName;
             hpInput.value = '';
             hpInput.tabIndex = -1;
-            hpInput.autocomplete = 'off';
+            hpInput.autocomplete = 'new-password';
+            hpInput.setAttribute('aria-hidden', 'true');
 
             hpWrap.appendChild(hpInput);
-            form.insertBefore(hpWrap, form.firstChild);
+            form.appendChild(hpWrap); // append at bottom so it doesn't receive autofill focus
         }
     }
 
     /**
      * Smart Field Mapping.
-     * Checks input fields and maps missing or generic name attributes to standard required names.
      */
     function mapFormFields(form) {
         const fields = form.querySelectorAll('input:not([type="hidden"]):not([type="submit"]), textarea, select');
@@ -170,7 +168,12 @@
             const id = (field.getAttribute('id') || '').toLowerCase();
             const placeholder = (field.getAttribute('placeholder') || '').toLowerCase();
             const type = (field.getAttribute('type') || '').toLowerCase();
-            
+
+            // Ignore honeypot
+            if (currentName.includes('hp') || currentName.includes('honeypot')) {
+                return;
+            }
+
             // Check associated label
             let labelText = '';
             if (field.id) {
@@ -180,7 +183,6 @@
 
             const identifier = `${currentName} ${id} ${placeholder} ${labelText}`.toLowerCase();
 
-            // Only map if current name is missing, empty, or generic
             const isStandard = [
                 'company_name', 'website', 'contact_person', 'job_title',
                 'email', 'phone', 'category', 'company_overview', 'consent'
@@ -205,7 +207,7 @@
                     field.setAttribute('name', 'contact_person');
                 } else if (identifier.includes('job') || identifier.includes('title') || identifier.includes('designation') || identifier.includes('role')) {
                     field.setAttribute('name', 'job_title');
-                } else if (field.tagName.toLowerCase() === 'select' || identifier.includes('category') || identifier.includes('award')) {
+                } else if (field.tagName.toLowerCase() === 'select' || identifier.includes('category') || identifier.includes('award') || identifier.includes('expertise')) {
                     field.setAttribute('name', 'category');
                 } else if (field.tagName.toLowerCase() === 'textarea' || identifier.includes('overview') || identifier.includes('about') || identifier.includes('description') || identifier.includes('reason')) {
                     field.setAttribute('name', 'company_overview');
@@ -218,8 +220,11 @@
      * Handle submission validation, disable submit button, and display spinner.
      */
     function handleFormSubmit(e, form, config) {
-        // Clear previous inline errors
         clearFieldErrors(form);
+
+        // Ensure JS verification token is refreshed on submit click
+        ensureHiddenField(form, 'hr_js_verified', '1');
+        ensureHiddenField(form, 'hr_timestamp', String(Date.now()));
 
         const errors = validateForm(form, config);
 
@@ -232,7 +237,7 @@
         // Form is valid: set submit button to loading state
         setSubmitButtonLoading(form, config);
 
-        // Native POST to admin-post.php proceeds.
+        // Native POST to admin-post.php proceeds
         return true;
     }
 
@@ -259,7 +264,6 @@
             const field = getFieldByName(form, rule.name);
 
             if (!field) {
-                // If field doesn't exist by exact name, we don't block unless form has it mapped
                 return;
             }
 
@@ -286,8 +290,9 @@
                         });
                     }
                 } else if (rule.type === 'url') {
+                    // Check URL (with or without protocol)
+                    const urlToTest = val.startsWith('http://') || val.startsWith('https://') ? val : 'https://' + val;
                     try {
-                        const urlToTest = val.startsWith('http://') || val.startsWith('https://') ? val : 'https://' + val;
                         new URL(urlToTest);
                     } catch (err) {
                         errors.push({
@@ -309,7 +314,6 @@
         let el = form.querySelector(`[name="${name}"]`);
         if (el) return el;
 
-        // Try common aliases
         const aliases = {
             company_name: ['company', 'company-name', 'companyname'],
             website: ['url', 'company_website', 'company-website', 'site'],
@@ -348,14 +352,12 @@
             }
             errSpan.textContent = item.message;
 
-            // Scroll to the first erroneous element
             if (index === 0) {
                 field.focus();
                 field.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
 
-        // Show brief top warning alert above form
         const banner = createAlertBanner(
             'error',
             config.i18n ? config.i18n.errorTitle : 'Submission Error',
@@ -436,6 +438,8 @@
                 errorMsg = i18n.validationError || 'Please check that all required fields are filled out correctly.';
             } else if (reason === 'invalid_nonce') {
                 errorMsg = i18n.invalidNonce || 'Session expired. Please refresh the page and try again.';
+            } else if (reason === 'database_error') {
+                errorMsg = 'A temporary database error occurred. Please try again.';
             }
 
             banner = createAlertBanner(
@@ -445,15 +449,12 @@
             );
         }
 
-        // Insert above form or top of container
         insertFormBanner(form, banner);
 
-        // Scroll to banner
         if (banner) {
             banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // Clean query parameter from browser address bar without reload
         cleanUrlHistory();
     }
 
@@ -544,7 +545,6 @@
         return div.innerHTML;
     }
 
-    // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initHRNomination);
     } else {

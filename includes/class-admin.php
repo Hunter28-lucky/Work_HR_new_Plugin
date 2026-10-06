@@ -34,10 +34,18 @@ class HR_Nomination_Admin {
 	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_admin_menus' ) );
+		add_action( 'admin_init', array( $this, 'ensure_database_ready' ) );
 		add_action( 'admin_init', array( $this, 'handle_export_requests' ) );
 		add_action( 'admin_init', array( $this, 'handle_admin_actions' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+	}
+
+	/**
+	 * Ensure database table exists whenever accessing admin.
+	 */
+	public function ensure_database_ready(): void {
+		HR_Nomination_Database::ensure_table_exists();
 	}
 
 	/**
@@ -126,18 +134,6 @@ class HR_Nomination_Admin {
 			'sanitize_callback' => fn( $val ) => ! empty( $val ) ? 1 : 0,
 			'default'           => 1,
 		) );
-
-		register_setting( 'hr_nomination_options_group', 'hr_github_repo', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-			'default'           => 'Hunter28-lucky/Work_HR_new_Plugin',
-		) );
-
-		register_setting( 'hr_nomination_options_group', 'hr_github_token', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-			'default'           => '',
-		) );
 	}
 
 	/**
@@ -205,7 +201,6 @@ class HR_Nomination_Admin {
 		$search      = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 		$category    = isset( $_GET['category_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['category_filter'] ) ) : '';
 
-		// Fetch all matching rows for export
 		$submissions = HR_Nomination_Database::get_submissions( array(
 			'search'   => $search,
 			'category' => $category,
@@ -236,11 +231,8 @@ class HR_Nomination_Admin {
 		header( 'Expires: 0' );
 
 		$output = fopen( 'php://output', 'w' );
-
-		// UTF-8 BOM for Excel
 		fwrite( $output, "\xEF\xBB\xBF" );
 
-		// Column headers
 		fputcsv( $output, array(
 			'ID',
 			'Date Submitted',
@@ -295,7 +287,7 @@ class HR_Nomination_Admin {
 			wp_die( esc_html__( 'Failed to generate Excel file on server.', 'hr-nomination-form' ) );
 		}
 
-		// 1. [Content_Types].xml
+		// [Content_Types].xml
 		$zip->addFromString(
 			'[Content_Types].xml',
 			'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
@@ -308,7 +300,7 @@ class HR_Nomination_Admin {
 			'</Types>'
 		);
 
-		// 2. _rels/.rels
+		// _rels/.rels
 		$zip->addFromString(
 			'_rels/.rels',
 			'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
@@ -317,7 +309,7 @@ class HR_Nomination_Admin {
 			'</Relationships>'
 		);
 
-		// 3. xl/_rels/workbook.xml.rels
+		// xl/_rels/workbook.xml.rels
 		$zip->addFromString(
 			'xl/_rels/workbook.xml.rels',
 			'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
@@ -327,7 +319,7 @@ class HR_Nomination_Admin {
 			'</Relationships>'
 		);
 
-		// 4. xl/workbook.xml
+		// xl/workbook.xml
 		$zip->addFromString(
 			'xl/workbook.xml',
 			'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
@@ -336,7 +328,7 @@ class HR_Nomination_Admin {
 			'</workbook>'
 		);
 
-		// 5. xl/styles.xml (Bold Header styling)
+		// xl/styles.xml
 		$zip->addFromString(
 			'xl/styles.xml',
 			'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
@@ -359,7 +351,7 @@ class HR_Nomination_Admin {
 			'</styleSheet>'
 		);
 
-		// 6. xl/worksheets/sheet1.xml
+		// xl/worksheets/sheet1.xml
 		$headers = array(
 			'ID',
 			'Date Submitted',
@@ -381,7 +373,6 @@ class HR_Nomination_Admin {
 			'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
 			'<sheetData>';
 
-		// Row 1: Headers (style s="1" for dark background + bold white font)
 		$sheet_xml .= '<row r="1">';
 		foreach ( $headers as $c_idx => $header_text ) {
 			$col_letter = $this->get_excel_col_letter( $c_idx + 1 );
@@ -393,7 +384,6 @@ class HR_Nomination_Admin {
 		}
 		$sheet_xml .= '</row>';
 
-		// Data rows
 		$row_idx = 2;
 		foreach ( $submissions as $row ) {
 			$cols = array(
@@ -431,7 +421,6 @@ class HR_Nomination_Admin {
 		$zip->addFromString( 'xl/worksheets/sheet1.xml', $sheet_xml );
 		$zip->close();
 
-		// Stream to browser
 		header( 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		header( 'Content-Length: ' . filesize( $tmp_file ) );
@@ -444,7 +433,7 @@ class HR_Nomination_Admin {
 	}
 
 	/**
-	 * Convert 1-based column number to Excel letter (1 = A, 27 = AA).
+	 * Convert 1-based column number to Excel letter.
 	 *
 	 * @param int $n Column number.
 	 * @return string
@@ -506,7 +495,6 @@ class HR_Nomination_Admin {
 			}
 		}
 
-		// Update check notice
 		if ( isset( $_GET['hr_update_check'] ) ) {
 			if ( 'update_available' === $_GET['hr_update_check'] ) {
 				echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html__( 'A new version is available on GitHub!', 'hr-nomination-form' ) . '</strong> <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'View and update on Plugins page &rarr;', 'hr-nomination-form' ) . '</a></p></div>';
@@ -819,24 +807,11 @@ class HR_Nomination_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Unauthorized access.', 'hr-nomination-form' ) );
 		}
-
-		$check_update_url = wp_nonce_url(
-			admin_url( 'admin-post.php?action=hr_check_updates' ),
-			'hr_check_updates_nonce'
-		);
-
-		if ( isset( $_GET['hr_update_check'] ) ) {
-			if ( 'update_available' === $_GET['hr_update_check'] ) {
-				echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html__( 'A new version is available on GitHub!', 'hr-nomination-form' ) . '</strong> <a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">' . esc_html__( 'View and update on Plugins page &rarr;', 'hr-nomination-form' ) . '</a></p></div>';
-			} else {
-				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Plugin is currently up to date with the latest GitHub release.', 'hr-nomination-form' ) . '</p></div>';
-			}
-		}
 		?>
 		<div class="wrap hr-admin-wrap" style="max-width:900px;">
 			<h1><?php esc_html_e( 'HR Nomination Settings', 'hr-nomination-form' ); ?></h1>
 			<p class="description">
-				<?php esc_html_e( 'Configure notification email recipients, subject template placeholders, export settings, and GitHub auto-update parameters.', 'hr-nomination-form' ); ?>
+				<?php esc_html_e( 'Configure notification email recipients, subject template placeholders, and submission storage.', 'hr-nomination-form' ); ?>
 			</p>
 
 			<form method="post" action="options.php">
@@ -912,45 +887,6 @@ class HR_Nomination_Admin {
 									<?php esc_html_e( 'Save every submission to custom table wp_hr_nominations', 'hr-nomination-form' ); ?>
 								</label>
 								<p class="description"><?php esc_html_e( 'Enables viewing, filtering, deleting, and exporting submissions from WordPress Admin.', 'hr-nomination-form' ); ?></p>
-							</td>
-						</tr>
-					</table>
-				</div>
-
-				<div class="card" style="padding:20px 24px;margin-top:20px;">
-					<h2><?php esc_html_e( 'GitHub Auto-Update Settings', 'hr-nomination-form' ); ?></h2>
-					<p class="description">
-						<?php esc_html_e( 'Connected repository for automatic one-click updates directly inside WordPress.', 'hr-nomination-form' ); ?>
-					</p>
-					<table class="form-table">
-						<tr>
-							<th scope="row">
-								<label for="hr_github_repo"><?php esc_html_e( 'GitHub Repository Slug', 'hr-nomination-form' ); ?></label>
-							</th>
-							<td>
-								<input type="text" id="hr_github_repo" name="hr_github_repo" value="<?php echo esc_attr( get_option( 'hr_github_repo', 'Hunter28-lucky/Work_HR_new_Plugin' ) ); ?>" placeholder="e.g. Hunter28-lucky/Work_HR_new_Plugin" class="regular-text" />
-								<p class="description"><?php esc_html_e( 'Connected: Hunter28-lucky/Work_HR_new_Plugin', 'hr-nomination-form' ); ?></p>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row">
-								<label for="hr_github_token"><?php esc_html_e( 'Personal Access Token (PAT)', 'hr-nomination-form' ); ?></label>
-							</th>
-							<td>
-								<input type="password" id="hr_github_token" name="hr_github_token" value="<?php echo esc_attr( get_option( 'hr_github_token', '' ) ); ?>" class="regular-text" />
-								<p class="description"><?php esc_html_e( 'Optional. Only required if your GitHub repository is private.', 'hr-nomination-form' ); ?></p>
-							</td>
-						</tr>
-
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Check Updates', 'hr-nomination-form' ); ?></th>
-							<td>
-								<a href="<?php echo esc_url( $check_update_url ); ?>" class="button button-secondary">
-									<span class="dashicons dashicons-update" style="vertical-align:middle;margin-right:4px;"></span>
-									<?php esc_html_e( 'Check for Updates Now', 'hr-nomination-form' ); ?>
-								</a>
-								<p class="description"><?php esc_html_e( 'Immediately queries GitHub API, bypassing the 6-hour cache.', 'hr-nomination-form' ); ?></p>
 							</td>
 						</tr>
 					</table>

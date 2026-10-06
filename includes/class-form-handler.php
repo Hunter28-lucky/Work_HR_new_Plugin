@@ -60,9 +60,13 @@ class HR_Nomination_Form_Handler {
 			$this->redirect_with_status( $return_url, 'error', 'invalid_nonce' );
 		}
 
-		// 2. Honeypot check for bots.
-		$honeypot = isset( $_POST[ self::HONEYPOT_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::HONEYPOT_FIELD ] ) ) : '';
-		if ( ! empty( $honeypot ) ) {
+		// 2. Intelligent Honeypot & Bot Verification.
+		// If honeypot is populated AND request was NOT verified by browser JavaScript, drop it as bot spam.
+		// If a real human's browser autofilled the honeypot, JS token preserves the submission.
+		$honeypot    = isset( $_POST[ self::HONEYPOT_FIELD ] ) ? trim( (string) wp_unslash( $_POST[ self::HONEYPOT_FIELD ] ) ) : '';
+		$js_verified = ! empty( $_POST['hr_js_verified'] ) && '1' === (string) $_POST['hr_js_verified'];
+
+		if ( ! empty( $honeypot ) && ! $js_verified ) {
 			// Silently redirect bot as success to avoid triggering retry loops.
 			$this->redirect_with_status( $return_url, 'success' );
 		}
@@ -86,16 +90,18 @@ class HR_Nomination_Form_Handler {
 			$this->redirect_with_status( $return_url, 'error', 'validation_failed' );
 		}
 
-		// 6. Save to Database (if enabled in settings).
-		$db_enabled    = (int) get_option( 'hr_db_storage', 1 );
+		// 6. Save to Database (defaults to enabled unless explicitly set to 0).
+		$db_setting = get_option( 'hr_db_storage', 1 );
+		$db_enabled = ( '0' !== (string) $db_setting && false !== $db_setting );
 		$submission_id = 0;
 
 		if ( $db_enabled ) {
 			$submission_id = HR_Nomination_Database::insert_submission( $data );
-			if ( ! $submission_id ) {
-				$this->redirect_with_status( $return_url, 'error', 'database_error' );
+			if ( $submission_id ) {
+				$data['id'] = $submission_id;
+			} else {
+				error_log( 'HR Nomination Form: Failed to save submission to database table.' );
 			}
-			$data['id'] = $submission_id;
 		}
 
 		// 7. Send Email notification with CSV attachment.
@@ -113,19 +119,18 @@ class HR_Nomination_Form_Handler {
 	 * Handle AJAX form submission.
 	 */
 	public function handle_ajax_submission(): void {
-		// Nonce check.
 		$nonce = isset( $_POST['hr_nomination_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['hr_nomination_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
 			wp_send_json_error( array( 'message' => __( 'Security verification failed. Please refresh and try again.', 'hr-nomination-form' ) ), 403 );
 		}
 
-		// Honeypot.
-		$honeypot = isset( $_POST[ self::HONEYPOT_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ self::HONEYPOT_FIELD ] ) ) : '';
-		if ( ! empty( $honeypot ) ) {
+		$honeypot    = isset( $_POST[ self::HONEYPOT_FIELD ] ) ? trim( (string) wp_unslash( $_POST[ self::HONEYPOT_FIELD ] ) ) : '';
+		$js_verified = ! empty( $_POST['hr_js_verified'] ) && '1' === (string) $_POST['hr_js_verified'];
+
+		if ( ! empty( $honeypot ) && ! $js_verified ) {
 			wp_send_json_success( array( 'message' => __( 'Nomination received.', 'hr-nomination-form' ) ) );
 		}
 
-		// Rate limit.
 		$ip       = $this->get_client_ip();
 		$rate_key = 'hr_nom_rl_' . md5( $ip );
 		if ( false !== get_transient( $rate_key ) ) {
@@ -133,7 +138,6 @@ class HR_Nomination_Form_Handler {
 		}
 		set_transient( $rate_key, 1, 60 );
 
-		// Extract & validate.
 		$data   = $this->extract_and_sanitize_data();
 		$errors = $this->validate_submission( $data );
 		if ( ! empty( $errors ) ) {
@@ -146,15 +150,16 @@ class HR_Nomination_Form_Handler {
 			);
 		}
 
-		// Save DB.
-		$db_enabled    = (int) get_option( 'hr_db_storage', 1 );
+		$db_setting    = get_option( 'hr_db_storage', 1 );
+		$db_enabled    = ( '0' !== (string) $db_setting && false !== $db_setting );
 		$submission_id = 0;
 		if ( $db_enabled ) {
 			$submission_id = HR_Nomination_Database::insert_submission( $data );
-			$data['id']    = $submission_id;
+			if ( $submission_id ) {
+				$data['id'] = $submission_id;
+			}
 		}
 
-		// Email.
 		$email_sent = $this->send_notification_email( $data );
 		if ( $db_enabled && $submission_id && $email_sent ) {
 			HR_Nomination_Database::update_email_status( $submission_id, 1 );
@@ -176,7 +181,6 @@ class HR_Nomination_Form_Handler {
 	public function extract_and_sanitize_data(): array {
 		$post = wp_unslash( $_POST );
 
-		// Helper to look up field across alias keys.
 		$get_field = function ( array $keys ) use ( $post ): string {
 			foreach ( $keys as $k ) {
 				if ( isset( $post[ $k ] ) && '' !== trim( (string) $post[ $k ] ) ) {
@@ -186,8 +190,13 @@ class HR_Nomination_Form_Handler {
 			return '';
 		};
 
+		$raw_website = $get_field( array( 'website', 'company_website', 'company-website', 'url', 'site_url' ) );
+		if ( ! empty( $raw_website ) && ! preg_match( '#^https?://#i', $raw_website ) ) {
+			$raw_website = 'https://' . $raw_website;
+		}
+
 		$company_name     = sanitize_text_field( $get_field( array( 'company_name', 'company', 'company-name', 'companyName' ) ) );
-		$website          = esc_url_raw( $get_field( array( 'website', 'company_website', 'company-website', 'url', 'site_url' ) ) );
+		$website          = esc_url_raw( $raw_website );
 		$contact_person   = sanitize_text_field( $get_field( array( 'contact_person', 'contact_name', 'name', 'full_name', 'contactPerson' ) ) );
 		$job_title        = sanitize_text_field( $get_field( array( 'job_title', 'title', 'designation', 'position', 'jobTitle' ) ) );
 		$email            = sanitize_email( $get_field( array( 'email', 'contact_email', 'work_email', 'email_address' ) ) );
@@ -195,15 +204,17 @@ class HR_Nomination_Form_Handler {
 		$category         = sanitize_text_field( $get_field( array( 'category', 'award_category', 'nomination_category', 'awards_category' ) ) );
 		$company_overview = sanitize_textarea_field( $get_field( array( 'company_overview', 'overview', 'description', 'nomination_reason', 'about_company', 'why_nominate' ) ) );
 
-		// Consent check (checkbox or radio).
+		// Consent check (checkbox or radio)
 		$consent_val = $get_field( array( 'consent', 'agree', 'terms', 'privacy_consent', 'agreement' ) );
 		$consent     = ! empty( $consent_val ) && ( '1' === $consent_val || 'on' === strtolower( $consent_val ) || 'yes' === strtolower( $consent_val ) || 'true' === strtolower( $consent_val ) ) ? 1 : 0;
 
-		// Capture any remaining extra fields so no information is lost.
+		// Capture any remaining extra fields
 		$standard_keys = array(
 			'action',
 			'hr_nomination_nonce',
 			'return_url',
+			'hr_js_verified',
+			'hr_timestamp',
 			self::HONEYPOT_FIELD,
 			'company_name',
 			'company',
@@ -333,20 +344,17 @@ class HR_Nomination_Form_Handler {
 	 * @return bool True if sent, false otherwise.
 	 */
 	public function send_notification_email( array $data ): bool {
-		// 1. Recipient email.
 		$recipient = get_option( 'hr_recipient_email', get_option( 'admin_email' ) );
 		if ( empty( $recipient ) ) {
 			$recipient = get_option( 'admin_email' );
 		}
 
-		// Allow comma-separated multiple recipients.
 		$recipients = array_map( 'trim', explode( ',', $recipient ) );
 		$recipients = array_filter( $recipients, 'is_email' );
 		if ( empty( $recipients ) ) {
 			$recipients = array( get_option( 'admin_email' ) );
 		}
 
-		// 2. Email Subject with placeholders.
 		$subject_template = get_option( 'hr_subject_template', 'New HR Nomination: {company_name} - {category}' );
 		$placeholders     = array(
 			'{company_name}'   => $data['company_name'],
@@ -359,7 +367,6 @@ class HR_Nomination_Form_Handler {
 		);
 		$subject = str_replace( array_keys( $placeholders ), array_values( $placeholders ), $subject_template );
 
-		// 3. Sender headers.
 		$from_name  = get_option( 'hr_from_name', get_bloginfo( 'name' ) );
 		$from_email = get_option( 'hr_from_email', get_option( 'admin_email' ) );
 		if ( empty( $from_email ) || ! is_email( $from_email ) ) {
@@ -372,10 +379,8 @@ class HR_Nomination_Form_Handler {
 			sprintf( 'Reply-To: %s <%s>', wp_strip_all_tags( $data['contact_person'] ), sanitize_email( $data['email'] ) ),
 		);
 
-		// 4. Build HTML email body.
 		$body = $this->build_html_email_body( $data );
 
-		// 5. Build CSV attachment (if enabled).
 		$attachments    = array();
 		$attach_csv_opt = (int) get_option( 'hr_csv_attachment', 1 );
 		$temp_csv_file  = '';
@@ -387,15 +392,13 @@ class HR_Nomination_Form_Handler {
 			}
 		}
 
-		// 6. Send email.
 		$mail_sent = wp_mail( $recipients, $subject, $body, $headers, $attachments );
 
-		// 7. Clean up temporary CSV file.
 		if ( ! empty( $temp_csv_file ) && file_exists( $temp_csv_file ) ) {
 			@unlink( $temp_csv_file );
 		}
 
-		return $mail_sent;
+		return (bool) $mail_sent;
 	}
 
 	/**
@@ -525,10 +528,8 @@ class HR_Nomination_Form_Handler {
 			return '';
 		}
 
-		// Write UTF-8 BOM for Excel compatibility.
 		fwrite( $handle, "\xEF\xBB\xBF" );
 
-		// CSV headers.
 		fputcsv(
 			$handle,
 			array(
@@ -547,7 +548,6 @@ class HR_Nomination_Form_Handler {
 			)
 		);
 
-		// CSV row.
 		fputcsv(
 			$handle,
 			array(
@@ -623,7 +623,6 @@ class HR_Nomination_Form_Handler {
 	 * @param string|null $reason Reason slug.
 	 */
 	private function redirect_with_status( string $url, string $status, ?string $reason = null ): void {
-		// Clean out existing nomination query parameters.
 		$cleaned_url = remove_query_arg( array( 'nomination', 'reason' ), $url );
 
 		$args = array( 'nomination' => $status );

@@ -32,7 +32,28 @@ class HR_Nomination_Database {
 	}
 
 	/**
-	 * Create database table on plugin activation.
+	 * Verify if database table exists.
+	 *
+	 * @return bool
+	 */
+	public static function table_exists(): bool {
+		global $wpdb;
+		$table_name = self::get_table_name();
+		$found      = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+		return $found === $table_name;
+	}
+
+	/**
+	 * Ensure table exists; create if missing.
+	 */
+	public static function ensure_table_exists(): void {
+		if ( ! self::table_exists() ) {
+			self::create_tables();
+		}
+	}
+
+	/**
+	 * Create database table directly and reliably.
 	 */
 	public static function create_tables(): void {
 		global $wpdb;
@@ -40,29 +61,29 @@ class HR_Nomination_Database {
 		$table_name      = self::get_table_name();
 		$charset_collate = $wpdb->get_charset_collate();
 
-		$sql = "CREATE TABLE {$table_name} (
-			id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-			company_name VARCHAR(255) NOT NULL,
-			website VARCHAR(255) NOT NULL,
-			contact_person VARCHAR(255) NOT NULL,
-			job_title VARCHAR(255) NOT NULL,
-			email VARCHAR(255) NOT NULL,
-			phone VARCHAR(100) NOT NULL,
-			category VARCHAR(255) NOT NULL,
-			company_overview LONGTEXT NOT NULL,
-			consent TINYINT(1) NOT NULL DEFAULT 1,
-			extra_data LONGTEXT NULL,
-			ip_address VARCHAR(45) NOT NULL,
-			email_sent TINYINT(1) NOT NULL DEFAULT 0,
-			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			PRIMARY KEY  (id),
-			KEY email (email(191)),
-			KEY category (category(191)),
-			KEY created_at (created_at)
+		// Use direct CREATE TABLE IF NOT EXISTS to prevent dbDelta parsing edge-cases
+		$sql = "CREATE TABLE IF NOT EXISTS `{$table_name}` (
+			`id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`company_name` VARCHAR(255) NOT NULL,
+			`website` VARCHAR(255) NOT NULL,
+			`contact_person` VARCHAR(255) NOT NULL,
+			`job_title` VARCHAR(255) NOT NULL,
+			`email` VARCHAR(255) NOT NULL,
+			`phone` VARCHAR(100) NOT NULL,
+			`category` VARCHAR(255) NOT NULL,
+			`company_overview` LONGTEXT NOT NULL,
+			`consent` TINYINT(1) NOT NULL DEFAULT 1,
+			`extra_data` LONGTEXT NULL,
+			`ip_address` VARCHAR(45) NOT NULL,
+			`email_sent` TINYINT(1) NOT NULL DEFAULT 0,
+			`created_at` DATETIME NOT NULL,
+			PRIMARY KEY (`id`),
+			KEY `email` (`email`(191)),
+			KEY `category` (`category`(191)),
+			KEY `created_at` (`created_at`)
 		) {$charset_collate};";
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		dbDelta( $sql );
+		$wpdb->query( $sql );
 	}
 
 	/**
@@ -74,7 +95,15 @@ class HR_Nomination_Database {
 	public static function insert_submission( array $data ) {
 		global $wpdb;
 
+		// Guarantee table exists before insert
+		self::ensure_table_exists();
+
 		$table = self::get_table_name();
+
+		$extra_val = null;
+		if ( ! empty( $data['extra_data'] ) ) {
+			$extra_val = is_string( $data['extra_data'] ) ? $data['extra_data'] : wp_json_encode( $data['extra_data'] );
+		}
 
 		$row = array(
 			'company_name'     => sanitize_text_field( $data['company_name'] ?? '' ),
@@ -86,32 +115,22 @@ class HR_Nomination_Database {
 			'category'         => sanitize_text_field( $data['category'] ?? '' ),
 			'company_overview' => sanitize_textarea_field( $data['company_overview'] ?? '' ),
 			'consent'          => ! empty( $data['consent'] ) ? 1 : 0,
-			'extra_data'       => ! empty( $data['extra_data'] ) ? ( is_string( $data['extra_data'] ) ? $data['extra_data'] : wp_json_encode( $data['extra_data'] ) ) : null,
+			'extra_data'       => $extra_val,
 			'ip_address'       => sanitize_text_field( $data['ip_address'] ?? '' ),
 			'email_sent'       => ! empty( $data['email_sent'] ) ? 1 : 0,
-			'created_at'       => current_time( 'mysql' ),
+			'created_at'       => ! empty( $data['created_at'] ) ? $data['created_at'] : current_time( 'mysql' ),
 		);
 
-		$formats = array(
-			'%s', // company_name
-			'%s', // website
-			'%s', // contact_person
-			'%s', // job_title
-			'%s', // email
-			'%s', // phone
-			'%s', // category
-			'%s', // company_overview
-			'%d', // consent
-			'%s', // extra_data
-			'%s', // ip_address
-			'%d', // email_sent
-			'%s', // created_at
-		);
-
-		$result = $wpdb->insert( $table, $row, $formats );
+		$result = $wpdb->insert( $table, $row );
 
 		if ( false === $result ) {
-			return false;
+			// If insert failed, try re-creating table and retrying once
+			self::create_tables();
+			$result = $wpdb->insert( $table, $row );
+			if ( false === $result ) {
+				error_log( 'HR Nomination Form DB Error: ' . $wpdb->last_error );
+				return false;
+			}
 		}
 
 		return (int) $wpdb->insert_id;
@@ -125,6 +144,8 @@ class HR_Nomination_Database {
 	 */
 	public static function get_submissions( array $args = array() ): array {
 		global $wpdb;
+
+		self::ensure_table_exists();
 
 		$table = self::get_table_name();
 
@@ -142,7 +163,7 @@ class HR_Nomination_Database {
 		$where_clauses = array( '1=1' );
 		$params        = array();
 
-		// Search filter.
+		// Search filter
 		if ( ! empty( $args['search'] ) ) {
 			$search_term     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
 			$where_clauses[] = '(company_name LIKE %s OR contact_person LIKE %s OR email LIKE %s)';
@@ -151,7 +172,7 @@ class HR_Nomination_Database {
 			$params[]        = $search_term;
 		}
 
-		// Category filter.
+		// Category filter
 		if ( ! empty( $args['category'] ) ) {
 			$where_clauses[] = 'category = %s';
 			$params[]        = $args['category'];
@@ -159,7 +180,6 @@ class HR_Nomination_Database {
 
 		$where_sql = implode( ' AND ', $where_clauses );
 
-		// Validate orderby and order.
 		$allowed_orderby = array( 'id', 'company_name', 'category', 'created_at', 'contact_person' );
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'id';
 		$order           = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
@@ -186,6 +206,8 @@ class HR_Nomination_Database {
 	public static function get_total_count( array $args = array() ): int {
 		global $wpdb;
 
+		self::ensure_table_exists();
+
 		$table = self::get_table_name();
 
 		$where_clauses = array( '1=1' );
@@ -211,7 +233,8 @@ class HR_Nomination_Database {
 			$sql = $wpdb->prepare( $sql, $params );
 		}
 
-		return (int) $wpdb->get_var( $sql );
+		$count = $wpdb->get_var( $sql );
+		return (int) $count;
 	}
 
 	/**
@@ -222,6 +245,8 @@ class HR_Nomination_Database {
 	 */
 	public static function get_submission( int $id ) {
 		global $wpdb;
+
+		self::ensure_table_exists();
 
 		$table = self::get_table_name();
 		$sql   = $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id );
@@ -238,6 +263,8 @@ class HR_Nomination_Database {
 	public static function delete_submission( int $id ): bool {
 		global $wpdb;
 
+		self::ensure_table_exists();
+
 		$table  = self::get_table_name();
 		$result = $wpdb->delete( $table, array( 'id' => $id ), array( '%d' ) );
 
@@ -252,6 +279,8 @@ class HR_Nomination_Database {
 	 */
 	public static function delete_submissions( array $ids ): int {
 		global $wpdb;
+
+		self::ensure_table_exists();
 
 		$ids = array_map( 'intval', $ids );
 		$ids = array_filter( $ids, fn( $id ) => $id > 0 );
@@ -279,6 +308,8 @@ class HR_Nomination_Database {
 	public static function update_email_status( int $id, int $status ): bool {
 		global $wpdb;
 
+		self::ensure_table_exists();
+
 		$table  = self::get_table_name();
 		$result = $wpdb->update(
 			$table,
@@ -298,6 +329,8 @@ class HR_Nomination_Database {
 	 */
 	public static function get_categories(): array {
 		global $wpdb;
+
+		self::ensure_table_exists();
 
 		$table = self::get_table_name();
 		$sql   = "SELECT DISTINCT category FROM {$table} WHERE category != '' ORDER BY category ASC";
